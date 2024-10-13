@@ -1,6 +1,5 @@
 import React from 'react'
 import './Form.css'
-import './Background.css'
 
 import { FaUser } from "react-icons/fa"
 import { FaLock } from "react-icons/fa"
