@@ -1,8 +1,8 @@
 import Navbar from "../Dashboard/Navbar";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Home from './Pages/Home';
-import Product from './Pages/ViewProduct';
 import AddProduct from './Pages/AddProduct';
+import "./Main.css";
 
 function Dashboard() {
   return (
@@ -12,7 +12,6 @@ function Dashboard() {
         <Routes>
           <Route path="/" exact Component={Home} />
           <Route path="/addproduct" Component={AddProduct} />
-          <Route path="/viewproducts" Component={Product} />
         </Routes>
       </Router>
     </>
