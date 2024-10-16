@@ -18,12 +18,6 @@ export const SidebarData = [
         cName: 'nav-text'
     },
     {
-        title: 'Products',
-        path: '/viewproducts',
-        icon: <FaIcons.FaCartPlus/>,
-        cName: 'nav-text'
-    },
-    {
         title: 'Log-out',
         path: '/',
         icon: <RiIcons.RiLogoutCircleFill/>,

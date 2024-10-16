@@ -1,6 +1,5 @@
 // import LoginForm from './Components/Form/LoginForm';
- import Dashboard from './Components/Dashboard/Main';
-import './App.css';
+import Dashboard from './Components/Dashboard/Main';
 function App() {
   return (
     // <div>
