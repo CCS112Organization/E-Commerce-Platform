@@ -1,9 +1,11 @@
-import React from 'react'
+import React from 'react';
+
+import './AddProduct.css';
 
 function AddProduct() {
   return (
     <div className='addproducts'>
-        <h1>Add Product</h1>
+      
     </div>
   )
 }
