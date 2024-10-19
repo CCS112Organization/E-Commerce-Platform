@@ -1,0 +1,162 @@
+
+.wrapper {
+    max-width: 1900px; 
+    margin:0 auto; 
+    padding: 10px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+.wrapper h1 { 
+    font-size: 40px;
+    border-bottom: 3px solid rgb(17, 130, 250);
+    margin-bottom: 20px;
+    color: rgb(0, 0, 0);
+}
+.table {
+  width: 100%;
+  margin: 10px auto;
+  border-radius: 8px;
+  overflow: hidden;
+  border-collapse: collapse;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+
+.table thead th {
+  background-color: rgb(21, 34, 18);
+  color: white;
+  text-align: left;
+  font-weight: bold;
+  padding: 12px; 
+}
+
+
+.table tbody tr:nth-child(even) {
+  background-color: #f8f9fa;
+}
+
+.table tbody tr:nth-child(odd) {
+  background-color: #ffffff;
+}
+
+
+.table td, .table th {
+  padding: 3px; 
+  border: 1px solid #000000;
+  text-align: left;
+}
+
+
+.table-hover tbody tr:hover {
+  background-color: #e9ecef;
+}
+
+
+.table tbody td:first-child {
+  text-align: center;
+  font-weight: bold;
+}
+
+
+@media (max-width: 768px) {
+  .table {
+    width: 100%;
+  }
+
+  .table thead {
+    display: none;
+  }
+
+  .table tbody tr {
+    display: block;
+    margin-bottom: 10px;
+  }
+
+  .table tbody td {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px;
+    border-bottom: 1px solid #dee2e6;
+  }
+
+  .table tbody td::before {
+    content: attr(data-label);
+    font-weight: bold;
+    text-transform: uppercase;
+    color: #495057;
+  }
+}
+
+
+form select {
+  width: 100%; 
+  padding: 8px;
+  font-size: 1rem;
+  font-weight: bold;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  background-color: rgb(21, 34, 18); 
+  color: white;
+  transition: border-color 0.2s, box-shadow 0.2s, background-color 0.2s;
+}
+
+
+form select:focus {
+  border-color: #80bdff;
+  outline: none;
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+  background-color: #2e3b28; 
+}
+
+
+form select:hover {
+  background-color: #2e3b28; 
+}
+
+
+form select[size="lg"] {
+  font-size: 1.2rem;
+  padding: 12px;
+}
+
+
+@media (max-width: 768px) {
+  form select {
+    width: 100%;
+  }
+}
+
+.form-group {
+    margin-bottom: 20px; 
+}
+
+.edit-btn,
+.delete-btn {
+    border: none; /* Remove default border */
+    border-radius: 5px; /* Rounded corners */
+    padding: 8px 12px; /* Add some padding */
+    font-size: 16px; /* Font size */
+    cursor: pointer; /* Change cursor on hover */
+    margin-right: 8px; /* Space between buttons */
+    transition: background-color 0.3s; /* Smooth background color transition */
+}
+
+.edit-btn {
+    background-color: #007bff; /* Blue background for edit button */
+    color: white; /* White text color */
+}
+
+.edit-btn:hover {
+    background-color: #0056b3; /* Darker blue on hover */
+}
+
+.delete-btn {
+    background-color: #dc3545; /* Red background for delete button */
+    color: white; /* White text color */
+}
+
+.delete-btn:hover {
+    background-color: #c82333; /* Darker red on hover */
+}
