@@ -7,10 +7,24 @@
   font-family: 'Montserrat', sans-serif;
 }
 
-.home, .addproducts, .viewproducts {
+.home {
   display: flex;
   height: 90vh;
   align-items: center;
   justify-content: center;
   font-size: 3rem;
+}
+
+@media (max-width: 768px) {
+  .card {
+      margin: 2%; 
+      padding: 0.5rem; 
+      margin-left: 0;
+  }
+
+  .navbar {
+    width: 100%; /* Full width on small screens */
+    height: auto; /* Auto height */
+
+  }
 }
