@@ -3,7 +3,7 @@ import { Button, Form, Card, Row, Col } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./AddProduct.css";
 
-function AddProduct({ show, handleClose }) {
+function AddProduct() {
   const [defaultValue, setDefaultValue] = useState('');
 
   const generateRandomNumber = () => {
@@ -60,7 +60,7 @@ function AddProduct({ show, handleClose }) {
           <h1>Add Product</h1>
         </Card.Header>
         <Card.Body>
-          <Form class="sample">
+          <Form>
             <Row className="mb-3">
               <Col md={6}>
                 <Form.Group controlId="barcode">
