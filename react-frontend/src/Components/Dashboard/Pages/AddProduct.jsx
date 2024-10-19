@@ -11,7 +11,6 @@ function AddProduct() {
     setDefaultValue(randomNumber.toString());
   };
 
-
   // const [code, setCode] = useState("");
   // const [title, setTitle] = useState("");
   // const [description, setDescription] = useState("");
