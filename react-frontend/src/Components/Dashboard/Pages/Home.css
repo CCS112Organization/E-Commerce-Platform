@@ -1,9 +1,12 @@
 
 .wrapper {
+<<<<<<< HEAD
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
+=======
+>>>>>>> d185e1f359686fcf6ed7de8f6ad58a9cb07c1788
     max-width: 1900px; 
     margin:0 auto; 
     padding: 10px;
@@ -24,12 +27,20 @@
   border-radius: 8px;
   overflow: hidden;
   border-collapse: collapse;
+<<<<<<< HEAD
   box-shadow: 0 0 1px rgba(0, 0, 0, .125), 0 1px 3px rgba(0, 0, 0, .2);
+=======
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+>>>>>>> d185e1f359686fcf6ed7de8f6ad58a9cb07c1788
 }
 
 
 .table thead th {
+<<<<<<< HEAD
   background-color: rgb(21, 133, 148);
+=======
+  background-color: rgb(21, 34, 18);
+>>>>>>> d185e1f359686fcf6ed7de8f6ad58a9cb07c1788
   color: white;
   text-align: left;
   font-weight: bold;
@@ -47,7 +58,12 @@
 
 
 .table td, .table th {
+<<<<<<< HEAD
   padding: 3px;
+=======
+  padding: 3px; 
+  border: 1px solid #000000;
+>>>>>>> d185e1f359686fcf6ed7de8f6ad58a9cb07c1788
   text-align: left;
 }
 
@@ -79,7 +95,11 @@
 
   .table tbody td {
     display: flex;
+<<<<<<< HEAD
     justify-content:space-between;
+=======
+    justify-content: space-between;
+>>>>>>> d185e1f359686fcf6ed7de8f6ad58a9cb07c1788
     padding: 10px;
     border-bottom: 1px solid #dee2e6;
   }
@@ -110,8 +130,20 @@ form select:focus {
   border-color: #80bdff;
   outline: none;
   box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+<<<<<<< HEAD
 }
 
+=======
+  background-color: #2e3b28; 
+}
+
+
+form select:hover {
+  background-color: #2e3b28; 
+}
+
+
+>>>>>>> d185e1f359686fcf6ed7de8f6ad58a9cb07c1788
 form select[size="lg"] {
   font-size: 1.2rem;
   padding: 12px;
