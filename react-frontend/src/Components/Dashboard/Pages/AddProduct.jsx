@@ -1,79 +1,100 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Button, Form, Card, Row, Col } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./AddProduct.css";
 
 function AddProduct() {
-  const [defaultValue, setDefaultValue] = useState('');
+  const [defaultValue, setDefaultValue] = useState("");
+  const [productName, setProductName] = useState("");
+  const [description, setDescription] = useState("");
+  const [price, setPrice] = useState("");
+  const [quantity, setQuantity] = useState("");
+  const [category, setCategory] = useState("");
 
   const generateRandomNumber = () => {
-    const randomNumber = Math.floor(100000000000 + Math.random() * 900000000000);
+    const randomNumber = Math.floor(
+      100000000000 + Math.random() * 900000000000
+    );
     setDefaultValue(randomNumber.toString());
   };
 
-  // const [code, setCode] = useState("");
-  // const [title, setTitle] = useState("");
-  // const [description, setDescription] = useState("");
-  // const [status, setStatus] = useState("Pending");
-  // const [dueDate, setDueDate] = useState("");
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-  // const handleSubmit = (e) => {
-    // e.preventDefault(); // Prevent the default form submission
+    const productData = {
+      barcode: defaultValue,
+      name: productName,
+      description: description,
+      price: price,
+      quantity: quantity,
+      category: category,
+    };
 
-    // // Create the data object to be sent to the API
-    // const prodData = {
-    //   code: code,
-    //   title: title,
-    //   description: description,
-    //   status: status,
-    //   due_date: dueDate,
-    // };
-    // console.log(prodData);
+    try {
+      const response = await fetch("http://127.0.0.1:8000/api/products", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(productData),
+      });
 
-    // // Post the data to the API
-    // fetch("http://127.0.0.1:8000/api/tasks/", {
-    //   method: "POST",
-    //   headers: {
-    //     "Content-Type": "application/json",
-    //   },
-    //   body: JSON.stringify(prodData),
-    // })
-    //   .then((response) => {
-    //     if (!response.ok) {
-    //       throw new Error("Network response was not ok");
-    //     }
-    //     return response.json();
-    //   })
-    //   .then((data) => {
-    //     console.log("Success:", data);
-    //     // You can reset the form or display a success message here
-    //   })
-    //   .catch((error) => {
-    //     console.error("Error:", error);
-    //   });
-  // };
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
+      }
+
+      const data = await response.json();
+      console.log("Product added:", data);
+      // Reset the form fields after successful submission
+      setDefaultValue("");
+      setProductName("");
+      setDescription("");
+      setPrice("");
+      setQuantity("");
+      setCategory("");
+    } catch (error) {
+      console.error("Error adding product:", error);
+    }
+  };
+
   return (
-    <div className="container">
+    <div className="container-add">
       <Card>
         <Card.Header>
           <h1>Add Product</h1>
         </Card.Header>
         <Card.Body>
-          <Form>
+          <Form onSubmit={handleSubmit}>
             <Row className="mb-3">
               <Col md={6}>
                 <Form.Group controlId="barcode">
                   <Form.Label>Barcode (UPC)</Form.Label>
-                  <Form.Control type="text" placeholder="Enter barcode" defaultValue={defaultValue} readOnly/>
-                  <Button variant="primary" onClick={generateRandomNumber}>
-                Generate New Random Number
-            </Button>
+                  <Form.Control
+                    type="text"
+                    placeholder="Enter barcode"
+                    value={defaultValue}
+                    readOnly
+                  />
                 </Form.Group>
+                <Button
+                  variant="primary"
+                  onClick={generateRandomNumber}
+                  className="generate-button"
+                  required
+                >
+                  Generate Barcode
+                </Button>
               </Col>
               <Col md={6}>
                 <Form.Group controlId="name">
                   <Form.Label>Product Name</Form.Label>
-                  <Form.Control type="text" placeholder="Enter product name" />
+                  <Form.Control
+                    type="text"
+                    placeholder="Enter product name"
+                    value={productName}
+                    onChange={(e) => setProductName(e.target.value)}
+                    required
+                  />
                 </Form.Group>
               </Col>
             </Row>
@@ -85,6 +106,8 @@ function AddProduct() {
                     as="textarea"
                     rows={3}
                     placeholder="Enter product description"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
                   />
                 </Form.Group>
               </Col>
@@ -97,6 +120,8 @@ function AddProduct() {
                     type="number"
                     placeholder="Enter price"
                     step="0.01"
+                    value={price}
+                    onChange={(e) => setPrice(e.target.value)}
                     required
                   />
                 </Form.Group>
@@ -108,6 +133,8 @@ function AddProduct() {
                     type="number"
                     placeholder="Enter quantity"
                     min="1"
+                    value={quantity}
+                    onChange={(e) => setQuantity(e.target.value)}
                     required
                   />
                 </Form.Group>
@@ -117,22 +144,35 @@ function AddProduct() {
               <Col md={6}>
                 <Form.Group controlId="category">
                   <Form.Label>Category</Form.Label>
-                  <Form.Select>
-                    <option>Category</option>
-                    <option value="1">One</option>
-                    <option value="2">Two</option>
-                    <option value="3">Three</option>
+                  <Form.Select
+                    value={category}
+                    onChange={(e) => setCategory(e.target.value)}
+                    required
+                  >
+                    <option value="">Select a category</option>
+                    <option value="Adventure">Adventure</option>
+                    <option value="Biography">Biography</option>
+                    <option value="Comedy">Comedy</option>
+                    <option value="Comics">Comics</option>
+                    <option value="Children">Children</option>
+                    <option value="Documentary">Documentary</option>
+                    <option value="Drama">Drama</option>
+                    <option value="Fantasy">Fantasy</option>
+                    <option value="Fiction">Fiction</option>
+                    <option value="History">History</option>
+                    <option value="Horror">Horror</option>
+                    <option value="Mystery">Mystery</option>
+                    <option value="Non-Fiction">Non-Fiction</option>
+                    <option value="Romance">Romance</option>
                   </Form.Select>
                 </Form.Group>
               </Col>
             </Row>
+            <Button variant="primary" type="submit">
+              Save
+            </Button>
           </Form>
         </Card.Body>
-        <Card.Footer>
-          <div className="d-flex w-100 justify-content-center align-items-center">
-            <Button variant="primary">Save</Button>
-          </div>
-        </Card.Footer>
       </Card>
     </div>
   );

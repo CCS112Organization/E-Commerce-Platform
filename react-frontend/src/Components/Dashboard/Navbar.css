@@ -10,6 +10,8 @@
     margin-left: 2rem;
     font-size: 2rem;
     background: none;
+    display: flex;
+    align-items: center;
 }
 
 .nav-menu {
