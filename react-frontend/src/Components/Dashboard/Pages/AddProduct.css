@@ -32,3 +32,13 @@ body {
 .card-footer {
     background-color: white;
 }
+
+.generate-button {
+    margin-top: 1rem; 
+}
+
+.container-add {
+   justify-content: center; 
+   align-items: center;
+    max-width: 2000;
+}

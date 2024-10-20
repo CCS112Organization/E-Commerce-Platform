@@ -1,90 +1,47 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Table, Form, Button, Card, Modal, Row, Col } from "react-bootstrap";
+import GridLoader from "react-spinners/GridLoader";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./Home.css";
 
-const productData = [
-  {
-    id: 134356890564,
-    name: "Mouse",
-    description: "Wired mouse with 2 meter cable",
-    quantity: 10,
-    price: 500,
-    category: "Electronics",
-  },
-  {
-    id: 2,
-    name: "rk60",
-    description: "Wireless keyboard",
-    quantity: 5,
-    price: 1650,
-    category: "Electronics",
-  },
-  {
-    id: 3,
-    name: "Asus Monitor",
-    description: "144hz monitor",
-    quantity: 8,
-    price: 10623,
-    category: "Electronics",
-  },
-  {
-    id: 4,
-    name: "Table",
-    description: "Wooden table",
-    quantity: 4,
-    price: 2999,
-    category: "Furniture",
-  },
-  {
-    id: 5,
-    name: "Chair",
-    description: "Office chair",
-    quantity: 15,
-    price: 799,
-    category: "Furniture",
-  },
-  {
-    id: 6,
-    name: "Chair",
-    description: "Gaming chair",
-    quantity: 4,
-    price: 799,
-    category: "Furniture",
-  },
-  {
-    id: 7,
-    name: "Chair",
-    description: "Folding chair",
-    quantity: 16,
-    price: 799,
-    category: "Furniture",
-  },
-  {
-    id: 8,
-    name: "Chair",
-    description: "Arm chair",
-    quantity: 25,
-    price: 799,
-    category: "Furniture",
-  },
-];
+// API Base URL
+const API_URL = "http://127.0.0.1:8000/api/products";
 
 function Home() {
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("All");
-  const [filteredData, setFilteredData] = useState(productData);
+  const [originalData, setOriginalData] = useState([]);
+  const [filteredData, setFilteredData] = useState([]);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [editedProduct, setEditedProduct] = useState({
-    id: null,
+    barcode: null,
     name: "",
     description: "",
     quantity: 0,
     price: 0,
     category: "Electronics",
   });
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  const fetchProducts = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch(API_URL);
+      const data = await response.json();
+      setOriginalData(data);
+      setFilteredData(data);
+    } catch (error) {
+      console.error("Error fetching products:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleCloseEdit = () => setShowEditModal(false);
   const handleCloseDelete = () => setShowDeleteModal(false);
@@ -93,13 +50,6 @@ function Home() {
     setSelectedProduct(product);
     setEditedProduct(product);
     setShowEditModal(true);
-  };
-  const handleSaveChanges = () => {
-    const updatedData = filteredData.map((product) =>
-      product.id === editedProduct.id ? editedProduct : product
-    );
-    setFilteredData(updatedData);
-    handleCloseEdit();
   };
 
   const handleInputChange = (event) => {
@@ -110,34 +60,69 @@ function Home() {
     }));
   };
 
-  const handleShowDelete = () => {
+  const handleUpdateProduct = async () => {
+    try {
+      const response = await fetch(`${API_URL}/${editedProduct.barcode}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(editedProduct),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to update product");
+      }
+
+      await response.json();
+      fetchProducts(); // Fetch products after updating
+      handleCloseEdit();
+    } catch (error) {
+      console.error("Error updating product:", error);
+    }
+  };
+
+  const handleShowDelete = (product) => {
+    setSelectedProduct(product);
     setShowDeleteModal(true);
   };
 
-  // Handle search by ID
-  const handleSearch = (event) => {
-    const value = event.target.value;
-    setSearchTerm(value);
-    filterData(value, categoryFilter);
+  const handleDeleteProduct = async () => {
+    try {
+      const response = await fetch(`${API_URL}/${selectedProduct.barcode}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to delete product");
+      }
+
+      fetchProducts(); // Fetch products after deletion
+      handleCloseDelete();
+    } catch (error) {
+      console.error("Error deleting product:", error);
+    }
   };
 
-  // Handle category filter
-  const handleCategoryChange = (event) => {
-    const category = event.target.value;
-    setCategoryFilter(category);
-    filterData(searchTerm, category);
+  const handleSearch = () => {
+    searchName(searchTerm, categoryFilter);
   };
 
-  // Filter data based on search term and category
-  const filterData = (id, category) => {
-    let data = productData;
+  const handleClearSearch = () => {
+    setSearchTerm("");
+    setCategoryFilter("All");
+    setFilteredData(originalData);
+  };
 
-    // Filter by ID
-    if (id) {
-      data = data.filter((product) => product.id.toString().includes(id));
+  const searchName = (name, category) => {
+    let data = [...originalData];
+
+    if (name) {
+      data = data.filter((product) =>
+        product.name.toLowerCase().includes(name.toLowerCase())
+      );
     }
 
-    // Filter by category (if not "All")
     if (category !== "All") {
       data = data.filter((product) => product.category === category);
     }
@@ -145,112 +130,161 @@ function Home() {
     setFilteredData(data);
   };
 
+  const handleCategoryChange = (event) => {
+    const category = event.target.value;
+    setCategoryFilter(category);
+    searchName(searchTerm, category);
+  };
+
   return (
     <>
-      <div className="container">
-        <Card>
-          <Card.Header>
-            <h1>Product Table</h1>
-          </Card.Header>
-          <Card.Body>
-            <Form>
-              <Row>
-                <Col>
-                  <Form.Group className="mb-3" controlId="search">
-                    <Form.Label className="mb-">
-                      Search by Product ID:
-                    </Form.Label>
-                    <Form.Control
-                      type="text"
-                      placeholder="Enter product ID"
-                      value={searchTerm}
-                      onChange={handleSearch}
-                    />
-                  </Form.Group>
-                </Col>
-                <Col>
-                  <Form.Group className="mb-3" controlId="category">
-                    <Form.Label>Filter by Category:</Form.Label>
-                    <Form.Select
-                      value={categoryFilter}
-                      onChange={handleCategoryChange}
+      {loading ? (
+        <div
+          className="d-flex justify-content-center align-items-center"
+          style={{ height: "100vh" }}
+        >
+          <GridLoader
+            color="#308fff"
+            cssOverride={{ margin: "auto" }}
+            size={35}
+          />
+        </div>
+      ) : (
+        <div className="container-dashboard">
+          <Card>
+            <Card.Header>
+              <h1>Product Table</h1>
+            </Card.Header>
+            <Card.Body>
+              <Form>
+                <Row>
+                  <Col>
+                    <Form.Group className="mb-3" controlId="search">
+                      <Form.Label className="mb-">Search product:</Form.Label>
+                      <Form.Control
+                        type="text"
+                        placeholder="Enter product name"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            handleSearch();
+                          }
+                        }}
+                      />
+                    </Form.Group>
+                    <Button
+                      variant="primary"
+                      size="sm"
+                      className="me-2"
+                      onClick={handleSearch}
                     >
-                      <option value="All">All</option>
-                      <option value="Electronics">Electronics</option>
-                      <option value="Furniture">Furniture</option>
-                    </Form.Select>
-                  </Form.Group>
-                </Col>
-              </Row>
-            </Form>
-            {/* Product Table */}
-            <div style={{ maxHeight: "335px", overflowY: "auto" }}>
-              <Table striped bordered hover responsive="sm">
-                <thead>
-                  <tr>
-                    <th>Product ID</th>
-                    <th>Product Name</th>
-                    <th>Product Description</th>
-                    <th>Quantity</th>
-                    <th>Price</th>
-                    <th>Category</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredData.map((product) => (
-                    <tr key={product.id}>
-                      <td>{product.id}</td>
-                      <td>{product.name}</td>
-                      <td>{product.description}</td>
-                      <td>{product.quantity}</td>
-                      <td>{product.price}</td>
-                      <td>{product.category}</td>
-                      <td>
-                        <Button
-                          variant="warning"
-                          size="sm"
-                          className="me-2"
-                          onClick={() => handleShowEdit(product)}
-                        >
-                          Edit
-                        </Button>
-                        <Button
-                          variant="danger"
-                          size="sm"
-                          onClick={handleShowDelete}
-                        >
-                          Delete
-                        </Button>
-                      </td>
+                      Search
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      className="me-2"
+                      onClick={handleClearSearch}
+                    >
+                      Clear Search
+                    </Button>
+                  </Col>
+                  <Col>
+                    <Form.Group className="mb-3" controlId="category">
+                      <Form.Label>Filter by category:</Form.Label>
+                      <Form.Select
+                        value={categoryFilter}
+                        onChange={handleCategoryChange}
+                      >
+                        <option value="All">All</option>
+                        <option value="Adventure">Adventure</option>
+                        <option value="Biography">Biography</option>
+                        <option value="Comedy">Comedy</option>
+                        <option value="Comics">Comics</option>
+                        <option value="Children">Children</option>
+                        <option value="Documentary">Documentary</option>
+                        <option value="Drama">Drama</option>
+                        <option value="Fantasy">Fantasy</option>
+                        <option value="Fiction">Fiction</option>
+                        <option value="History">History</option>
+                        <option value="Horror">Horror</option>
+                        <option value="Mystery">Mystery</option>
+                        <option value="Non-Fiction">Non-Fiction</option>
+                        <option value="Romance">Romance</option>
+                      </Form.Select>
+                    </Form.Group>
+                  </Col>
+                </Row>
+              </Form>
+              <div style={{ maxHeight: "335px", overflowY: "auto" }}>
+                <Table striped bordered hover responsive="sm">
+                  <thead>
+                    <tr>
+                      <th>Product ID</th>
+                      <th>Product Name</th>
+                      <th>Product Description</th>
+                      <th>Stock</th>
+                      <th>Price</th>
+                      <th>Category</th>
+                      <th>Actions</th>
                     </tr>
-                  ))}
-                </tbody>
-              </Table>
-            </div>
-          </Card.Body>
-        </Card>
-      </div>
-
+                  </thead>
+                  <tbody>
+                    {filteredData.map((product) => (
+                      <tr key={product.barcode}>
+                        <td>{product.barcode}</td>
+                        <td>{product.name}</td>
+                        <td>{product.description}</td>
+                        <td>{product.quantity}</td>
+                        <td>{product.price}</td>
+                        <td>{product.category}</td>
+                        <td>
+                          <Button
+                            variant="warning"
+                            size="sm"
+                            className="me-2"
+                            onClick={() => handleShowEdit(product)}
+                          >
+                            Edit
+                          </Button>
+                          <Button
+                            variant="danger"
+                            size="sm"
+                            onClick={() => handleShowDelete(product)}
+                          >
+                            Delete
+                          </Button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </Table>
+              </div>
+            </Card.Body>
+          </Card>
+        </div>
+      )}
       <Modal
         show={showEditModal}
         onHide={handleCloseEdit}
         backdrop="static"
         keyboard={false}
-      > 
-      <Modal.Header closeButton>
+      >
+        <Modal.Header closeButton>
           <Modal.Title>Edit Product</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <Form className="sample">
+          <Form>
             <Row className="mb-3">
               <Col md={6}>
                 <Form.Group controlId="barcode">
                   <Form.Label>Barcode (UPC)</Form.Label>
                   <Form.Control
                     type="text"
-                    name="id"
-                    value={editedProduct.id}
+                    name="barcode"
+                    value={editedProduct.barcode}
                     readOnly
                   />
                 </Form.Group>
@@ -300,7 +334,7 @@ function Home() {
               </Col>
               <Col md={6}>
                 <Form.Group controlId="quantity">
-                  <Form.Label>Quantity</Form.Label>
+                  <Form.Label>Stock</Form.Label>
                   <Form.Control
                     type="number"
                     name="quantity"
@@ -322,8 +356,20 @@ function Home() {
                     value={editedProduct.category}
                     onChange={handleInputChange}
                   >
-                    <option value="Electronics">Electronics</option>
-                    <option value="Furniture">Furniture</option>
+                    <option value="Adventure">Adventure</option>
+                    <option value="Biography">Biography</option>
+                    <option value="Comedy">Comedy</option>
+                    <option value="Comics">Comics</option>
+                    <option value="Children">Children</option>
+                    <option value="Documentary">Documentary</option>
+                    <option value="Drama">Drama</option>
+                    <option value="Fantasy">Fantasy</option>
+                    <option value="Fiction">Fiction</option>
+                    <option value="History">History</option>
+                    <option value="Horror">Horror</option>
+                    <option value="Mystery">Mystery</option>
+                    <option value="Non-Fiction">Non-Fiction</option>
+                    <option value="Romance">Romance</option>
                   </Form.Select>
                 </Form.Group>
               </Col>
@@ -331,7 +377,7 @@ function Home() {
           </Form>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="primary" onClick={handleSaveChanges}>
+          <Button variant="primary" onClick={handleUpdateProduct}>
             Update
           </Button>
           <Button variant="secondary" onClick={handleCloseEdit}>
@@ -351,7 +397,7 @@ function Home() {
         </Modal.Header>
         <Modal.Body>Are you sure you want to delete this product?</Modal.Body>
         <Modal.Footer>
-          <Button variant="danger" onClick={handleCloseDelete}>
+          <Button variant="danger" onClick={handleDeleteProduct}>
             Delete
           </Button>
           <Button variant="secondary" onClick={handleCloseDelete}>
@@ -363,4 +409,4 @@ function Home() {
   );
 }
 
-export default Home
+export default Home;
