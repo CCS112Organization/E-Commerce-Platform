@@ -7,13 +7,13 @@ import * as RiIcons from "react-icons/ri";
 export const SidebarData = [
     {
         title: 'Home',
-        path: '/',
+        path: '/dashboard/home',
         icon: <AiIcons.AiFillHome/>,
         cName: 'nav-text'
     },
     {
         title: 'Add Product',
-        path: '/addproduct',
+        path: '/dashboard/addproduct',
         icon: <IoIcons.IoAddCircle />,
         cName: 'nav-text'
     },
