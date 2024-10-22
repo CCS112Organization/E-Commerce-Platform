@@ -78,16 +78,29 @@ class ProductController extends Controller
      */
     public function update(Request $request, string $barcode)
     {
-        $request->validate([
+        $product = Product::where('barcode', $barcode)->firstOrFail();
+
+        $rules = [
             'barcode' => 'required|max:255|unique:products,barcode,' . $barcode . ',barcode',
-            'name' => 'required|max:|unique:products,name,',
+            'name' => 'required|max:255|unique:products,name,' . $product->name . ',name',
             'description' => 'nullable|string',
             'price' => 'required|numeric',
             'quantity' => 'required|integer',
             'category' => 'required|max:255',
-        ]);
+        ];
 
-        $product = Product::where('barcode', $barcode)->firstOrFail(); // Find product by barcode
+        $messages = [
+            'barcode.unique' => 'The barcode already exists.',
+            'name.unique' => 'The product name already exists.',
+        ];
+
+        $validator = Validator::make($request->all(), $rules, $messages);
+
+        // Check if validation fails
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 400);
+        }
+
         $product->update($request->all()); // Update the product
         return response()->json($product); // Return updated product
     }

@@ -61,7 +61,7 @@ const LoginForm = () => {
       <form onSubmit={handleLogin}>
         <h1>Login</h1>
 
-        {errorMessage && <p className="error">{errorMessage}</p>} 
+        {errorMessage && <p className="error_form">{errorMessage}</p>} 
 
         <div className="input-box">
           <input
