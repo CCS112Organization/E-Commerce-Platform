@@ -98,7 +98,7 @@ class ProductController extends Controller
 
         // Check if validation fails
         if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 400);
+            return response()->json(['errors' => $validator->errors()], 401);
         }
 
         $product->update($request->all()); // Update the product

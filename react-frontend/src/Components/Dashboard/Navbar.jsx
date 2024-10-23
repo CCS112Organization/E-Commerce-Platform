@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import * as FaIcons from "react-icons/fa";
 import * as AiIcons from "react-icons/ai";
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { SidebarData } from "./SidebarData";
 import { IconContext } from 'react-icons';
 import './Navbar.css';
@@ -9,6 +9,12 @@ import './Navbar.css';
 export const Navbar = () => {
 const[sidebar, setSidebar] = useState(false);
 const showSidebar = () => setSidebar(!sidebar)
+const navigate = useNavigate();
+
+const handleLogout = () => {
+    localStorage.removeItem('token'); 
+    navigate('/'); 
+};
   return (
     <>
     <IconContext.Provider value={{color: '#fff'}}>
@@ -27,10 +33,17 @@ const showSidebar = () => setSidebar(!sidebar)
                 {SidebarData.map((item, index) => {
                     return (
                         <li key={index} className={item.cName}>
-                            <Link to={item.path}>
-                                {item.icon}
-                                <span>{item.title}</span>
-                            </Link>
+                            {item.path === '/' ? (
+                                <Link to={item.path} onClick={handleLogout}>
+                                    {item.icon}
+                                    <span>{item.title}</span>
+                                </Link>
+                            ) : (
+                                <Link to={item.path}>
+                                    {item.icon}
+                                    <span>{item.title}</span>
+                                </Link>
+                            )}
                         </li>
                         
                     )

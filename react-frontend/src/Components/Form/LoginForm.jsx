@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './Form.css';
 import { FaUser } from 'react-icons/fa';
 import { FaLock } from 'react-icons/fa';
@@ -11,49 +11,82 @@ const LoginForm = () => {
   const [errorMessage, setErrorMessage] = useState(null);
   const navigate = useNavigate();
 
+  useEffect(() => {
+      const token = localStorage.getItem('token');
+      if (token) {
+        fetchUser();
+        navigate('/dashboard'); 
+      } else {
+        navigate('/');
+      }
+  }, [navigate]);
+
   const handleLogin = async (e) => {
     e.preventDefault(); 
     setIsLoading(true);
-    setErrorMessage(null); 
+    setErrorMessage(null);
+    
+    const trimmedEmail = email.trim();
+    const trimmedPassword = password.trim();
 
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/login', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            email: email,
-            password: password
-        })
-      });
-  
-      const loginData = {
-        email: email,
-        password: password,
-      };
+        const response = await fetch('http://127.0.0.1:8000/api/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                email: trimmedEmail,
+                password: trimmedPassword
+            })
+        });
 
-      if (!response.ok) {
-          throw new Error('Invalid username or password');
-      }else if(response.status === 401){
-          throw new Error('Invalid credentials');
-      }else if (response.status === 500){
-          throw new Error('Server error');
-      }else if (response.status === 200){
-          console.log('Login successful');
-          const data = await response.json();
-          localStorage.setItem('token', data.access_token);  
-          localStorage.setItem('user', JSON.stringify(data.user));
-          console.log(data.user);
-          navigate('/dashboard'); 
+        if (response.ok) {
+            const data = await response.json();
+            localStorage.setItem('token', data.token); 
+            navigate('/dashboard'); 
+        } else {
+            const errorData = await response.json();
+            setErrorMessage(errorData.message || 'Something went wrong.');
+        }
+
+      } catch (error) {
+          setErrorMessage('Something went wrong. Please try again later.');
+      } finally {
+          setIsLoading(false);
       }
-
-    } catch (error) {
-      setErrorMessage(error.message || 'Something went wrong. Please try again later.');
-    } finally {
-      setIsLoading(false);
-    }
   };
+
+  const fetchUser = async () => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+        setErrorMessage('No token found. Please log in.');
+        return;
+    }
+
+    try {
+        const response = await fetch('http://127.0.0.1:8000/api/user', {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            }
+        });
+
+        if (response.ok) {
+            const userData = await response.json();
+            console.log('User data:', userData);
+            // Handle user data (e.g., set it in state)
+        } else {
+            const errorData = await response.json();
+            setErrorMessage(errorData.message || 'Failed to fetch user data.');
+        }
+
+      } catch (error) {
+          setErrorMessage('Something went wrong. Please try again later.');
+      }
+  };
+
 
   return (
     <div className='loginform'>
