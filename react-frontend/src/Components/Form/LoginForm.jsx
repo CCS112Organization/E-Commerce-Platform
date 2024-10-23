@@ -7,49 +7,61 @@ import { useNavigate } from 'react-router-dom';
 const LoginForm = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState(null);
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault(); 
-    setError(null); 
+    setIsLoading(true);
+    setErrorMessage(null); 
 
-    const loginData = {
-      email: email,
-      password: password,
-    };
-
-    fetch('http://127.0.0.1:8000/api/login', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(loginData),
-    })
-      .then((response) => {
-        if (!response.ok) {
-          return response.json().then((errorData) => {
-            throw new Error(errorData.message || 'Login failed');
-          });
-        }
-        return response.json();
-      })
-      .then((data) => {
-        localStorage.setItem('token', data.token);
-        navigate('/dashboard/home');
-      })
-      .catch((err) => {
-        setError(err.message); 
+    try {
+      const response = await fetch('http://127.0.0.1:8000/api/login', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            email: email,
+            password: password
+        })
       });
+  
+      const loginData = {
+        email: email,
+        password: password,
+      };
+
+      if (!response.ok) {
+          throw new Error('Invalid username or password');
+      }else if(response.status === 401){
+          throw new Error('Invalid credentials');
+      }else if (response.status === 500){
+          throw new Error('Server error');
+      }else if (response.status === 200){
+          console.log('Login successful');
+          const data = await response.json();
+          localStorage.setItem('token', data.access_token);  
+          localStorage.setItem('user', JSON.stringify(data.user));
+          console.log(data.user);
+          navigate('/dashboard'); 
+      }
+
+    } catch (error) {
+      setErrorMessage(error.message || 'Something went wrong. Please try again later.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
     <div className='loginform'>
       <div className='wrapper'>
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleLogin}>
         <h1>Login</h1>
 
-        {error && <p className="error">{error}</p>} 
+        {errorMessage && <p className="error_form">{errorMessage}</p>} 
 
         <div className="input-box">
           <input
@@ -57,7 +69,10 @@ const LoginForm = () => {
             placeholder="Email"
             required
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) =>{
+                setEmail(e.target.value); 
+                setErrorMessage('');
+            }}
           />
           <FaUser className="icon" />
         </div>
@@ -67,13 +82,19 @@ const LoginForm = () => {
             type="password"
             placeholder="Password"
             required
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            value={password}                                
+            onChange={(e) => {
+              setPassword(e.target.value);
+              setErrorMessage('');
+            }}
           />
           <FaLock className="icon" />
         </div>
 
-        <button type="submit">Login</button>
+        <button className='btn btn-primary mt-3 form-control' type="submit" disabled={isLoading}>
+          {isLoading ? 'Logging in...' : 'Login'}
+        </button>
+        
         </form>
       </div>
     </div>

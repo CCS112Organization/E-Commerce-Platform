@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Table, Form, Button, Card, Modal, Row, Col } from "react-bootstrap";
+import { Table, Form, Button, Card, Modal, Row, Col, Alert } from "react-bootstrap";
 import GridLoader from "react-spinners/GridLoader";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./Home.css";
@@ -24,10 +24,23 @@ function Home() {
     category: "Electronics",
   });
   const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState(null);
+  const [successMessage, setSuccessMessage] = useState(null);
 
   useEffect(() => {
     fetchProducts();
   }, []);
+
+  useEffect(() => {
+    if (successMessage || errorMessage) {
+      const timer = setTimeout(() => {
+        setSuccessMessage("");
+        setErrorMessage("");
+      }, 3000); 
+
+      return () => clearTimeout(timer); 
+    }
+  }, [successMessage, errorMessage]);
 
   const fetchProducts = async () => {
     setLoading(true);
@@ -71,10 +84,15 @@ function Home() {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to update product");
+        const errorData = await response.json();
+        const messages = Object.values(errorData.errors).flat().join(', ');
+        setErrorMessage(messages || "An error occurred.");
+        return;
       }
 
-      await response.json();
+      const data = await response.json();
+      setSuccessMessage("Product updated successfully!");
+      
       fetchProducts(); // Fetch products after updating
       handleCloseEdit();
     } catch (error) {
@@ -94,8 +112,11 @@ function Home() {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to delete product");
+        setErrorMessage("Failed to delete product.");
+        return;
       }
+  
+      setSuccessMessage("Product deleted successfully!");
 
       fetchProducts(); // Fetch products after deletion
       handleCloseDelete();
@@ -156,6 +177,16 @@ function Home() {
               <h1>Product Table</h1>
             </Card.Header>
             <Card.Body>
+                {successMessage && (
+                  <div className={`message success`}>
+                    {successMessage}
+                  </div>
+                )}
+                {errorMessage && (
+                  <div className={`message error`}>
+                    {errorMessage}
+                  </div>
+                )}
               <Form>
                 <Row>
                   <Col>

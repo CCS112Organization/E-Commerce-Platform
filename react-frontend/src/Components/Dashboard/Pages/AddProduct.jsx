@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Button, Form, Card, Row, Col } from "react-bootstrap";
+import { useNavigate } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./AddProduct.css";
 
@@ -11,6 +12,12 @@ function AddProduct() {
   const [quantity, setQuantity] = useState("");
   const [category, setCategory] = useState("");
 
+  const [loading, setLoading] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+
+  const navigate = useNavigate();
+
   const generateRandomNumber = () => {
     const randomNumber = Math.floor(
       100000000000 + Math.random() * 900000000000
@@ -20,40 +27,51 @@ function AddProduct() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+    setLoading(true);
+    setSuccessMessage(null);
+    setErrorMessage(null);
+  
     const productData = {
       barcode: defaultValue,
       name: productName,
-      description: description,
-      price: price,
-      quantity: quantity,
-      category: category,
+      description,
+      price,
+      quantity,
+      category,
     };
-
+  
     try {
       const response = await fetch("http://127.0.0.1:8000/api/products", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(productData),
       });
 
       if (!response.ok) {
-        throw new Error("Network response was not ok");
+        const errorData = await response.json();
+        const messages = Object.values(errorData.errors).flat().join(', ');
+        setErrorMessage(messages || "An error occurred.");
+        return;
       }
-
+  
       const data = await response.json();
-      console.log("Product added:", data);
-      // Reset the form fields after successful submission
+      setSuccessMessage("Product added successfully!");
+
       setDefaultValue("");
       setProductName("");
       setDescription("");
       setPrice("");
       setQuantity("");
       setCategory("");
+
+      setTimeout(() => {
+        navigate("/dashboard");
+      }, 1300);
+      
     } catch (error) {
-      console.error("Error adding product:", error);
+      setErrorMessage(error.message || "An error occurred.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -64,6 +82,12 @@ function AddProduct() {
           <h1>Add Product</h1>
         </Card.Header>
         <Card.Body>
+          {successMessage && (
+            <div className={`alert alert-success show`}> {successMessage} </div>
+          )}
+          {errorMessage && (
+            <div className="alert alert-danger show">{errorMessage}</div>
+          )}
           <Form onSubmit={handleSubmit}>
             <Row className="mb-3">
               <Col md={6}>
@@ -92,7 +116,11 @@ function AddProduct() {
                     type="text"
                     placeholder="Enter product name"
                     value={productName}
-                    onChange={(e) => setProductName(e.target.value)}
+                    onChange={(e) => {
+                      setProductName(e.target.value);
+                      setErrorMessage('');
+                      setSuccessMessage('');
+                    }}
                     required
                   />
                 </Form.Group>
@@ -107,7 +135,11 @@ function AddProduct() {
                     rows={3}
                     placeholder="Enter product description"
                     value={description}
-                    onChange={(e) => setDescription(e.target.value)}
+                    onChange={(e) => {
+                      setDescription(e.target.value);
+                      setErrorMessage('');
+                      setSuccessMessage('');
+                    }}
                   />
                 </Form.Group>
               </Col>
@@ -118,10 +150,16 @@ function AddProduct() {
                   <Form.Label>Price</Form.Label>
                   <Form.Control
                     type="number"
+                    inputMode="decimal"
                     placeholder="Enter price"
+                    min="1"
                     step="0.01"
                     value={price}
-                    onChange={(e) => setPrice(e.target.value)}
+                    onChange={(e) => {
+                      setPrice(e.target.value);
+                      setErrorMessage('');
+                      setSuccessMessage('');
+                    }}
                     required
                   />
                 </Form.Group>
@@ -131,10 +169,15 @@ function AddProduct() {
                   <Form.Label>Quantity</Form.Label>
                   <Form.Control
                     type="number"
+                    inputMode="decimal"
                     placeholder="Enter quantity"
                     min="1"
                     value={quantity}
-                    onChange={(e) => setQuantity(e.target.value)}
+                    onChange={(e) => {
+                      setQuantity(e.target.value);
+                      setErrorMessage('');
+                      setSuccessMessage('');
+                    }}
                     required
                   />
                 </Form.Group>
@@ -146,7 +189,11 @@ function AddProduct() {
                   <Form.Label>Category</Form.Label>
                   <Form.Select
                     value={category}
-                    onChange={(e) => setCategory(e.target.value)}
+                    onChange={(e) => {
+                      setCategory(e.target.value);
+                      setErrorMessage('');
+                      setSuccessMessage('');
+                    }}
                     required
                   >
                     <option value="">Select a category</option>
