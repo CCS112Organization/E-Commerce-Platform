@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useRef } from "react";
-import { Table, Form, Button, Card, Modal, Row, Col, Alert } from "react-bootstrap";
+import React, { useState, useEffect } from "react";
+import { Table, Form, Button, Card, Modal, Row, Col } from "react-bootstrap";
+import { useNavigate } from "react-router-dom";
 import GridLoader from "react-spinners/GridLoader";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./Home.css";
@@ -26,10 +27,17 @@ function Home() {
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
+  const [modalLoading, setModalLoading] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    fetchProducts();
-  }, []);
+    const token = localStorage.getItem('token');
+    if (!token) {
+      navigate('/'); 
+    } else {
+      fetchProducts(); 
+    }
+  }, [navigate]);
 
   useEffect(() => {
     if (successMessage || errorMessage) {
@@ -44,13 +52,29 @@ function Home() {
 
   const fetchProducts = async () => {
     setLoading(true);
+    const token = localStorage.getItem('token');
+    
     try {
-      const response = await fetch(API_URL);
+      const response = await fetch(API_URL, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`, 
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        setErrorMessage(errorData.message || "Failed to fetch products.");
+        return;
+      }
+
       const data = await response.json();
       setOriginalData(data);
       setFilteredData(data);
     } catch (error) {
       console.error("Error fetching products:", error);
+      setErrorMessage("Failed to fetch products.");
     } finally {
       setLoading(false);
     }
@@ -74,11 +98,15 @@ function Home() {
   };
 
   const handleUpdateProduct = async () => {
+    setModalLoading(true);
+    const token = localStorage.getItem('token');
+
     try {
       const response = await fetch(`${API_URL}/${editedProduct.barcode}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
+          'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify(editedProduct),
       });
@@ -90,13 +118,13 @@ function Home() {
         return;
       }
 
-      const data = await response.json();
       setSuccessMessage("Product updated successfully!");
-      
-      fetchProducts(); // Fetch products after updating
+      fetchProducts();
       handleCloseEdit();
     } catch (error) {
       console.error("Error updating product:", error);
+    } finally {
+      setModalLoading(false);
     }
   };
 
@@ -106,9 +134,14 @@ function Home() {
   };
 
   const handleDeleteProduct = async () => {
+    setModalLoading(true);
+    const token = localStorage.getItem('token');
     try {
       const response = await fetch(`${API_URL}/${selectedProduct.barcode}`, {
         method: "DELETE",
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
       });
 
       if (!response.ok) {
@@ -117,11 +150,12 @@ function Home() {
       }
   
       setSuccessMessage("Product deleted successfully!");
-
-      fetchProducts(); // Fetch products after deletion
+      fetchProducts();
       handleCloseDelete();
     } catch (error) {
       console.error("Error deleting product:", error);
+    } finally {
+      setModalLoading(false);
     }
   };
 
@@ -157,6 +191,8 @@ function Home() {
     searchName(searchTerm, category);
   };
 
+  const isUpdateDisabled = !editedProduct.price || editedProduct.price <= 0 || !editedProduct.quantity || editedProduct.quantity <= 0;
+
   return (
     <>
       {loading ? (
@@ -177,16 +213,21 @@ function Home() {
               <h1>Product Table</h1>
             </Card.Header>
             <Card.Body>
-                {successMessage && (
-                  <div className={`message success`}>
-                    {successMessage}
-                  </div>
-                )}
-                {errorMessage && (
-                  <div className={`message error`}>
-                    {errorMessage}
-                  </div>
-                )}
+              {successMessage && (
+                <div className={`message success`}>
+                  {successMessage}
+                </div>
+              )}
+              {errorMessage && (
+                <div className={`message error`}>
+                  {errorMessage}
+                </div>
+              )}
+              {filteredData.length === 0 && (
+                <div className="text-center">
+                  <p>No products found.</p>
+                </div>
+              )}
               <Form>
                 <Row>
                   <Col>
@@ -408,8 +449,8 @@ function Home() {
           </Form>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="primary" onClick={handleUpdateProduct}>
-            Update
+          <Button variant="primary" onClick={handleUpdateProduct} disabled={isUpdateDisabled || modalLoading}>
+            {modalLoading ? "Updating..." : "Update"}
           </Button>
           <Button variant="secondary" onClick={handleCloseEdit}>
             Cancel
@@ -428,8 +469,8 @@ function Home() {
         </Modal.Header>
         <Modal.Body>Are you sure you want to delete this product?</Modal.Body>
         <Modal.Footer>
-          <Button variant="danger" onClick={handleDeleteProduct}>
-            Delete
+          <Button variant="danger" onClick={handleDeleteProduct} disabled={modalLoading}>
+            {modalLoading ? "Deleting..." : "Delete"}
           </Button>
           <Button variant="secondary" onClick={handleCloseDelete}>
             Cancel
