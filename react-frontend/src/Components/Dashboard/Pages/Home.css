@@ -5,6 +5,7 @@
   overflow: hidden;
   border-collapse: collapse;
   box-shadow: 0 0 1px rgba(0, 0, 0, .125), 0 1px 3px rgba(0, 0, 0, .2);
+  
   }
   
   
@@ -35,6 +36,12 @@
   text-overflow: ellipsis;
   padding-right: 50px;
   box-sizing: border-box;
+  }
+  .action-cell{
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
   }
   
   
@@ -89,6 +96,7 @@
     transition: background-color 0.3s;
   }
   
+
   .edit-btn {
     background-color: #007bff; 
     color: white; 

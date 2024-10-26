@@ -312,11 +312,11 @@ function Home() {
                         <td>{product.quantity}</td>
                         <td>{product.price}</td>
                         <td>{product.category}</td>
-                        <td>
-                          <Button
+                        <td >
+                          <Button 
                             variant="warning"
                             size="sm"
-                            className="me-2"
+                            className="edit-btn"
                             onClick={() => handleShowEdit(product)}
                           >
                             Edit
@@ -324,6 +324,7 @@ function Home() {
                           <Button
                             variant="danger"
                             size="sm"
+                            className = "delete-btn"
                             onClick={() => handleShowDelete(product)}
                           >
                             Delete
