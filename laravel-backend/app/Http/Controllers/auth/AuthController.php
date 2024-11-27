@@ -43,9 +43,28 @@ class AuthController extends Controller
 
         $token = $user->createToken('auth_token')->plainTextToken;
 
+        // Return different responses based on the user role
+        if ($user->role === 'admin') {
+            return response()->json([
+                'token' => $token,
+                'role' => 'admin', // can access product routes
+                'user' => $user,
+            ]);
+        }
+
         return response()->json([
             'token' => $token,
-            'user' => $user
+            'role' => 'user', // can access cart routes
+            'user' => $user,
         ]);
+    }
+
+    public function logout(Request $request)
+    {
+        $request->user()->tokens->each(function ($token) {
+            $token->delete();
+        });
+
+        return response()->json(['message' => 'Logged out successfully']);
     }
 }
