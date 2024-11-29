@@ -11,9 +11,14 @@ class Product extends Model
     use HasFactory, HasApiTokens;
     //
 
-    protected $primaryKey = 'barcode';
-    public $incrementing = false;
-    protected $keyType = 'string';
+    protected $primaryKey = 'id';
+    public $incrementing = true;
+    protected $keyType = 'int';
+
+    public function getRouteKeyName()
+    {
+        return 'barcode';
+    }
 
     protected $fillable = [
         'barcode',
