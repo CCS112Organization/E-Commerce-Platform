@@ -18,6 +18,18 @@ class ProductFactory extends Factory
 
     public function definition(): array
     {
+        $category = [
+            'Electronics',
+            'Fashion',
+            'Health & Beauty',
+            'Home & Living',
+            'Groceries & Food',
+            'Toys & Baby',
+            'Sports & Outdoors',
+            'Automotive',
+            'Books, Music & Movies',
+            'Pets & Animals',
+        ];
 
         return [
             'barcode' => $this->faker->unique()->ean13(),
@@ -25,13 +37,7 @@ class ProductFactory extends Factory
             'description' => $this->faker->sentence(),
             'price' => $this->faker->randomFloat(2, 1, 100),
             'quantity' => $this->faker->numberBetween(1, 100),
-            'category' => $this->getRandomCategory()
+            'category' => $this->faker->randomElement($category)
         ];
-    }
-
-
-    private function getRandomCategory()
-    {
-        return Category::inRandomOrder()->first()->name;
     }
 }

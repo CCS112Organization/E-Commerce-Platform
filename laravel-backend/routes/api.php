@@ -3,7 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware([App\Http\Middleware\AuthMiddleware::class])->group(function () {
+Route::middleware(['auth:sanctum', 'admin'])->group(function () {
     Route::get('/user', function (Request $request) {
         return response()->json($request->user());
     });
@@ -14,3 +14,5 @@ Route::middleware([App\Http\Middleware\AuthMiddleware::class])->group(function (
 
 Route::post('/register', [App\Http\Controllers\auth\AuthController::class, 'register']);
 Route::post('/login', [App\Http\Controllers\auth\AuthController::class, 'login']);
+
+Route::middleware('auth:sanctum')->post('/logout', [App\Http\Controllers\auth\AuthController::class, 'logout']);
