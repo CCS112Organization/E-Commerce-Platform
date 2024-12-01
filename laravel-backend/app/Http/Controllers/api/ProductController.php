@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Product;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Auth;
 
 class ProductController extends Controller
 {
@@ -14,8 +15,12 @@ class ProductController extends Controller
      */
     public function index()
     {
-        $products = Product::all(); // Retrieve all products
-        return response()->json($products); // Return as JSON
+        if (Auth::user()->role !== 'admin') {
+            return response()->json(['message' => 'Forbidden'], 403);
+        }
+
+        $products = Product::all();
+        return response()->json($products);
     }
 
     /**
@@ -47,13 +52,12 @@ class ProductController extends Controller
 
         $validator = Validator::make($request->all(), $rules, $messages);
 
-        // Check if validation fails
         if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 400);
+            return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        $product = Product::create($request->all()); // Create the product
-        return response()->json($product, 201); // Return created product with status 201
+        $product = Product::create($request->all());
+        return response()->json($product, 201);
     }
 
     /**
@@ -61,8 +65,8 @@ class ProductController extends Controller
      */
     public function show(string $barcode)
     {
-        $product = Product::where('barcode', $barcode)->firstOrFail(); // Find product by barcode
-        return response()->json($product); // Return as JSON
+        $product = Product::where('barcode', $barcode)->firstOrFail();
+        return response()->json($product);
     }
 
     /**
@@ -96,13 +100,12 @@ class ProductController extends Controller
 
         $validator = Validator::make($request->all(), $rules, $messages);
 
-        // Check if validation fails
         if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 401);
+            return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        $product->update($request->all()); // Update the product
-        return response()->json($product); // Return updated product
+        $product->update($request->all());
+        return response()->json($product);
     }
 
     /**
@@ -110,8 +113,8 @@ class ProductController extends Controller
      */
     public function destroy(string $barcode)
     {
-        $product = Product::where('barcode', $barcode)->firstOrFail(); // Find product by barcode
-        $product->delete(); // Delete the product
-        return response()->json(null, 204); // Return no content status
+        $product = Product::where('barcode', $barcode)->firstOrFail();
+        $product->delete();
+        return response()->json(null, 204);
     }
 }
