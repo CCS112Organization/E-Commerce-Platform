@@ -3,7 +3,7 @@ import './Form.css';
 import { FaUser } from 'react-icons/fa';
 import { FaLock } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
-
+import { Link } from 'react-router-dom';
 const LoginForm = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -123,11 +123,18 @@ const LoginForm = () => {
           />
           <FaLock className="icon" />
         </div>
-
+        
         <button className='btn btn-primary mt-3 form-control' type="submit" disabled={isLoading}>
           {isLoading ? 'Logging in...' : 'Login'}
         </button>
-        
+        <div className='create-acc'>
+          <p>
+           
+            <Link to="/register">
+            Create an Account?{' '}
+            </Link>
+          </p>
+        </div>
         </form>
       </div>
     </div>
