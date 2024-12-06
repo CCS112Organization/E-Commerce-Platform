@@ -132,3 +132,9 @@
 .wrapper .register-link a:hover {
     text-decoration: underline;
 }
+.create-acc{
+    font-size: px;
+    text-align: right;
+    margin-top: 10px;
+    
+}
