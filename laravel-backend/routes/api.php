@@ -10,7 +10,7 @@ Route::middleware(['auth:sanctum', 'admin'])->group(function () {
 
 Route::middleware(['auth:sanctum', 'user'])->group(function () {
     Route::apiResource('carts', App\Http\Controllers\api\CartController::class);
-    Route::delete('/carts/clear', [App\Http\Controllers\api\CartController::class, 'deleteAllItems']);
+    Route::delete('/clear', [App\Http\Controllers\api\CartController::class, 'deleteAllItems']);
 });
 
 Route::post('/register', [App\Http\Controllers\auth\AuthController::class, 'register']);

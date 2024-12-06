@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use App\Models\Product;
 use App\Models\Cart;
+use Illuminate\Support\Facades\DB;
 
 class CartController extends Controller
 {
@@ -17,6 +18,7 @@ class CartController extends Controller
     public function index()
     {
         $user = Auth::user();
+        $cart = $user->cart ?: Cart::create(['user_id' => $user->id]);
         $cart = $user->cart->items()->get();
 
         if (!$cart) {
@@ -128,10 +130,35 @@ class CartController extends Controller
         $cart = $user->cart;
 
         if (!$cart) {
-            return response()->json(['message' => 'No cart found for this user'], 404);
+            return response()->json(['message' => 'No cart found for this user.'], 404);
         }
 
-        $cart->cartItems()->delete();
-        return response()->json(['message' => 'All items have been removed from the cart'], 200);
+        $cart->load('items.product');
+
+        if ($cart->items->isEmpty()) {
+            return response()->json(['message' => 'Cart is empty.'], 404);
+        }
+
+        DB::beginTransaction();
+
+        foreach ($cart->items as $item) {
+            $product = $item->product;
+
+            if ($product) {
+                if ($product->quantity >= $item->quantity) {
+                    $product->decrement('quantity', $item->quantity);
+                } else {
+                    DB::rollBack();
+                    return response()->json([
+                        'message' => "Product {$product->name} does not have enough stock."
+                    ], 400);
+                }
+            }
+        }
+
+        $cart->items()->delete();
+        DB::commit();
+
+        return response()->json(['message' => 'All items have been removed from the cart, and product stock has been updated.'], 200);
     }
 }
