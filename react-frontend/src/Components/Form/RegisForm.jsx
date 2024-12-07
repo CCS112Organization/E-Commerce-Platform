@@ -120,10 +120,10 @@ const RegistrationForm = () => {
             {isLoading ? 'Registering...' : 'Register'}
           </button>
 
-          <div className="text-center mt-3">
+          <div className='register-link'>
             <p>
               Already have an account?{' '}
-              <Link to="/" className="text-primary">
+              <Link to="/">
                 Login
               </Link>
             </p>

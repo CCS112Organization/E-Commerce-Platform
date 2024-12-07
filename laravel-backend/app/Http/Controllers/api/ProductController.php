@@ -15,9 +15,9 @@ class ProductController extends Controller
      */
     public function index()
     {
-        if (Auth::user()->role !== 'admin') {
-            return response()->json(['message' => 'Forbidden'], 403);
-        }
+        // if (Auth::user()->role !== 'admin') {
+        //     return response()->json(['message' => 'Forbidden'], 403);
+        // }
 
         $products = Product::all();
         return response()->json($products);

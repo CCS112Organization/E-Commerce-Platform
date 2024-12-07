@@ -60,15 +60,24 @@ class CartController extends Controller
         }
 
         $cart = $user->cart ?: Cart::create(['user_id' => $user->id]);
+        $existingItem = $cart->items()->where('product_id', $product->id)->first();
 
-        // Create the cart item
-        $cartItem = $cart->items()->create([
-            'product_id' => $product->id,
-            'quantity' => $request->quantity,
-            'price' => $product->price * $request->quantity,
-        ]);
-
-        return response()->json($cartItem, 201);
+        // Check if item exists in cart
+        if ($existingItem) {
+            // If the product is already in the cart, update the quantity instead
+            $existingItem->quantity += $request->quantity;
+            $existingItem->price = $product->price * $existingItem->quantity; 
+            $existingItem->save();
+            return response()->json($existingItem, 200);
+        } else {
+            // Create a new cart item
+            $cartItem = $cart->items()->create([
+                'product_id' => $product->id,
+                'quantity' => $request->quantity,
+                'price' => $product->price * $request->quantity,
+            ]);
+            return response()->json($cartItem, 201);
+        }
     }
 
     /**
@@ -160,5 +169,10 @@ class CartController extends Controller
         DB::commit();
 
         return response()->json(['message' => 'All items have been removed from the cart, and product stock has been updated.'], 200);
+    }
+
+    public function catalog() {
+        $products = Product::all();
+        return response()->json($products);
     }
 }
