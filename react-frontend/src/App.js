@@ -1,6 +1,8 @@
 import LoginForm from './Components/Form/LoginForm';
-import Dashboard from './Components/Dashboard/Main';
+import AdminDashboard from './Components/AdminDashboard/Main';
+import UserDashboard from './Components/UserDashboard/Main';
 import RegistrationForm from './Components/Form/RegisForm';
+import 'bootstrap/dist/css/bootstrap.min.css';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 
 function App() {
@@ -8,7 +10,8 @@ function App() {
     <Router>
       <Routes>
         <Route path="/" element={<LoginForm />} /> 
-        <Route path="/dashboard/*" element={<Dashboard />} /> 
+        <Route path="/admin/*" element={<AdminDashboard />} /> 
+        <Route path="/user/*" element={<UserDashboard />} /> 
         <Route path="/register" element={<RegistrationForm />} />
       </Routes>
     </Router>

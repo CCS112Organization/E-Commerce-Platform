@@ -1,4 +1,4 @@
-import Navbar from "../Dashboard/Navbar";
+import Navbar from "./Navbar";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
 import Home from './Pages/Home';
@@ -10,7 +10,7 @@ function Dashboard() {
       <Navbar />
       <Routes>
         <Route path="/" element={<Home />} /> 
-        <Route path="/addproduct/" element={<AddProduct />} />
+        <Route path="/add/" element={<AddProduct />} />
       </Routes>
     </>
   );

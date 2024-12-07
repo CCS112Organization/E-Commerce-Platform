@@ -209,20 +209,16 @@ function AddProduct() {
                     required
                   >
                     <option value="">Select a category</option>
-                    <option value="Adventure">Adventure</option>
-                    <option value="Biography">Biography</option>
-                    <option value="Comedy">Comedy</option>
-                    <option value="Comics">Comics</option>
-                    <option value="Children">Children</option>
-                    <option value="Documentary">Documentary</option>
-                    <option value="Drama">Drama</option>
-                    <option value="Fantasy">Fantasy</option>
-                    <option value="Fiction">Fiction</option>
-                    <option value="History">History</option>
-                    <option value="Horror">Horror</option>
-                    <option value="Mystery">Mystery</option>
-                    <option value="Non-Fiction">Non-Fiction</option>
-                    <option value="Romance">Romance</option>
+                    <option value="Electronics">Electronics</option>
+                    <option value="Fashion">Fashion</option>
+                    <option value="Health & Beauty">Health & Beauty</option>
+                    <option value="Home & Living">Home & Living</option>
+                    <option value="Groceries & Food">Groceries & Food</option>
+                    <option value="Toys & Baby">Toys & Baby</option>
+                    <option value="Sports & Outdoors">Sports & Outdoors</option>
+                    <option value="Automotive">Automotive</option>
+                    <option value="Books, Music & Movies">Books, Music & Movies</option>
+                    <option value="Pets & Animals">Pets & Animals</option>
                   </Form.Select>
                 </Form.Group>
               </Col>

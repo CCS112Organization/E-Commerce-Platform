@@ -22,7 +22,7 @@ function Home() {
     description: "",
     quantity: 0,
     price: 0,
-    category: "Electronics",
+    category: "",
   });
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState(null);
@@ -31,11 +31,11 @@ function Home() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem("token");
     if (!token) {
-      navigate('/'); 
+      navigate("/");
     } else {
-      fetchProducts(); 
+      fetchProducts();
     }
   }, [navigate]);
 
@@ -44,22 +44,22 @@ function Home() {
       const timer = setTimeout(() => {
         setSuccessMessage("");
         setErrorMessage("");
-      }, 3000); 
+      }, 3000);
 
-      return () => clearTimeout(timer); 
+      return () => clearTimeout(timer);
     }
   }, [successMessage, errorMessage]);
 
   const fetchProducts = async () => {
     setLoading(true);
-    const token = localStorage.getItem('token');
-    
+    const token = localStorage.getItem("token");
+
     try {
       const response = await fetch(API_URL, {
-        method: 'GET',
+        method: "GET",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`, 
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
       });
 
@@ -99,21 +99,21 @@ function Home() {
 
   const handleUpdateProduct = async () => {
     setModalLoading(true);
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem("token");
 
     try {
       const response = await fetch(`${API_URL}/${editedProduct.barcode}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          'Authorization': `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(editedProduct),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        const messages = Object.values(errorData.errors).flat().join(', ');
+        const messages = Object.values(errorData.errors).flat().join(", ");
         setErrorMessage(messages || "An error occurred.");
         return;
       }
@@ -135,12 +135,12 @@ function Home() {
 
   const handleDeleteProduct = async () => {
     setModalLoading(true);
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem("token");
     try {
       const response = await fetch(`${API_URL}/${selectedProduct.barcode}`, {
         method: "DELETE",
         headers: {
-          'Authorization': `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
       });
 
@@ -148,7 +148,7 @@ function Home() {
         setErrorMessage("Failed to delete product.");
         return;
       }
-  
+
       setSuccessMessage("Product deleted successfully!");
       fetchProducts();
       handleCloseDelete();
@@ -191,7 +191,11 @@ function Home() {
     searchName(searchTerm, category);
   };
 
-  const isUpdateDisabled = !editedProduct.price || editedProduct.price <= 0 || !editedProduct.quantity || editedProduct.quantity <= 0;
+  const isUpdateDisabled =
+    !editedProduct.price ||
+    editedProduct.price <= 0 ||
+    !editedProduct.quantity ||
+    editedProduct.quantity <= 0;
 
   return (
     <>
@@ -214,14 +218,10 @@ function Home() {
             </Card.Header>
             <Card.Body>
               {successMessage && (
-                <div className={`message success`}>
-                  {successMessage}
-                </div>
+                <div className={`message success`}>{successMessage}</div>
               )}
               {errorMessage && (
-                <div className={`message error`}>
-                  {errorMessage}
-                </div>
+                <div className={`message error`}>{errorMessage}</div>
               )}
               {filteredData.length === 0 && (
                 <div className="text-center">
@@ -271,20 +271,16 @@ function Home() {
                         onChange={handleCategoryChange}
                       >
                         <option value="All">All</option>
-                        <option value="Adventure">Adventure</option>
-                        <option value="Biography">Biography</option>
-                        <option value="Comedy">Comedy</option>
-                        <option value="Comics">Comics</option>
-                        <option value="Children">Children</option>
-                        <option value="Documentary">Documentary</option>
-                        <option value="Drama">Drama</option>
-                        <option value="Fantasy">Fantasy</option>
-                        <option value="Fiction">Fiction</option>
-                        <option value="History">History</option>
-                        <option value="Horror">Horror</option>
-                        <option value="Mystery">Mystery</option>
-                        <option value="Non-Fiction">Non-Fiction</option>
-                        <option value="Romance">Romance</option>
+                        <option value="Electronics">Electronics</option>
+                        <option value="Fashion">Fashion</option>
+                        <option value="Health & Beauty">Health & Beauty</option>
+                        <option value="Home & Living">Home & Living</option>
+                        <option value="Groceries & Food">Groceries & Food</option>
+                        <option value="Toys & Baby">Toys & Baby</option>
+                        <option value="Sports & Outdoors">Sports & Outdoors</option>
+                        <option value="Automotive">Automotive</option>
+                        <option value="Books, Music & Movies">Books, Music & Movies</option>
+                        <option value="Pets & Animals">Pets & Animals</option>
                       </Form.Select>
                     </Form.Group>
                   </Col>
@@ -312,8 +308,8 @@ function Home() {
                         <td>{product.quantity}</td>
                         <td>{product.price}</td>
                         <td>{product.category}</td>
-                        <td >
-                          <Button 
+                        <td>
+                          <Button
                             variant="warning"
                             size="sm"
                             className="edit-btn"
@@ -324,7 +320,7 @@ function Home() {
                           <Button
                             variant="danger"
                             size="sm"
-                            className = "delete-btn"
+                            className="delete-btn"
                             onClick={() => handleShowDelete(product)}
                           >
                             Delete
@@ -429,20 +425,16 @@ function Home() {
                     value={editedProduct.category}
                     onChange={handleInputChange}
                   >
-                    <option value="Adventure">Adventure</option>
-                    <option value="Biography">Biography</option>
-                    <option value="Comedy">Comedy</option>
-                    <option value="Comics">Comics</option>
-                    <option value="Children">Children</option>
-                    <option value="Documentary">Documentary</option>
-                    <option value="Drama">Drama</option>
-                    <option value="Fantasy">Fantasy</option>
-                    <option value="Fiction">Fiction</option>
-                    <option value="History">History</option>
-                    <option value="Horror">Horror</option>
-                    <option value="Mystery">Mystery</option>
-                    <option value="Non-Fiction">Non-Fiction</option>
-                    <option value="Romance">Romance</option>
+                    <option value="Electronics">Electronics</option>
+                    <option value="Fashion">Fashion</option>
+                    <option value="Health & Beauty">Health & Beauty</option>
+                    <option value="Home & Living">Home & Living</option>
+                    <option value="Groceries & Food">Groceries & Food</option>
+                    <option value="Toys & Baby">Toys & Baby</option>
+                    <option value="Sports & Outdoors">Sports & Outdoors</option>
+                    <option value="Automotive">Automotive</option>
+                    <option value="Books, Music & Movies">Books, Music & Movies</option>
+                    <option value="Pets & Animals">Pets & Animals</option>
                   </Form.Select>
                 </Form.Group>
               </Col>
@@ -450,7 +442,11 @@ function Home() {
           </Form>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="primary" onClick={handleUpdateProduct} disabled={isUpdateDisabled || modalLoading}>
+          <Button
+            variant="primary"
+            onClick={handleUpdateProduct}
+            disabled={isUpdateDisabled || modalLoading}
+          >
             {modalLoading ? "Updating..." : "Update"}
           </Button>
           <Button variant="secondary" onClick={handleCloseEdit}>
@@ -470,7 +466,11 @@ function Home() {
         </Modal.Header>
         <Modal.Body>Are you sure you want to delete this product?</Modal.Body>
         <Modal.Footer>
-          <Button variant="danger" onClick={handleDeleteProduct} disabled={modalLoading}>
+          <Button
+            variant="danger"
+            onClick={handleDeleteProduct}
+            disabled={modalLoading}
+          >
             {modalLoading ? "Deleting..." : "Delete"}
           </Button>
           <Button variant="secondary" onClick={handleCloseDelete}>
