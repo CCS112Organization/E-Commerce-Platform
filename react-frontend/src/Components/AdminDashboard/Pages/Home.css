@@ -2,6 +2,7 @@
   width: 100%;
   margin: 10px auto;
   border-radius: 8px;
+  min-height: 110px;
   overflow: hidden;
   border-collapse: collapse;
   box-shadow: 0 0 1px rgba(0, 0, 0, .125), 0 1px 3px rgba(0, 0, 0, .2);
@@ -131,4 +132,44 @@
 
 .error {
     background-color: #dc3545; 
+}
+
+.search-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end; /* Adjust based on layout */
+  transition: transform 0.3s ease;
+}
+
+.search-container:focus-within {
+  transform: scale(1.05); 
+}
+.search-input {
+  padding: 0.5rem 1rem;
+  text-indent: 1rem;
+  border-radius: 25px;
+  border: 1px solid #ddd;
+  width: 300px;
+  font-size: 16px;
+  transition: transform 0.3s ease, color 0.3s ease;
+}
+
+.search-input::placeholder {
+  text-indent: 1rem; /* Move the placeholder to the right to avoid overlap */
+  color: #aaa; /* Ensure placeholder text is visible and styled */
+}
+
+.search-input:focus {
+  border-color: #308fff;
+  outline: none;
+}
+
+.search-icon {
+  position: absolute;
+  left: 10px; /* Position the icon inside the input field */
+  font-size: 1rem;
+  color: #aaa;
+  pointer-events: none; /* Prevent the icon from interfering with input focus */
+  z-index: 1; /* Ensure it stays above the input field */
 }

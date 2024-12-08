@@ -3,10 +3,12 @@ import Home from './Pages/Home';
 import User from './Pages/User';
 import ViewCart from './Pages/ViewCart';
 import Checkout from './Pages/Checkout';
+import Navbar from './Navbar';
 
 function Dashboard() {
   return (
     <>
+    <Navbar />
       <Routes>
         <Route path="/" element={<Home />} /> 
         <Route path="/profile" element={<User />} />

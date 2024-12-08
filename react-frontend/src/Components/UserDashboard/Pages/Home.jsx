@@ -1,10 +1,25 @@
 import React, { useState, useEffect } from "react";
-import { Row, Col, Card, Button } from "react-bootstrap";
-import { FaRegEye, FaCartPlus, FaTshirt, FaHeart, FaHome, FaAppleAlt, FaBabyCarriage, FaBasketballBall, FaCar, FaBook, FaPaw, FaCouch, FaTv } from "react-icons/fa";
+import { Row, Col, Card, Button, Dropdown, Modal } from "react-bootstrap";
+import {
+  FaRegEye,
+  FaCartPlus,
+  FaTshirt,
+  FaHeart,
+  FaHome,
+  FaAppleAlt,
+  FaBabyCarriage,
+  FaBasketballBall,
+  FaCar,
+  FaBook,
+  FaPaw,
+  FaCouch,
+  FaTv,
+} from "react-icons/fa";
 import GridLoader from "react-spinners/GridLoader";
+import * as FaIcons from "react-icons/fa";
+import * as IoIcons from "react-icons/io5";
 import { useNavigate } from "react-router-dom";
-import { toast, Toaster } from "sonner"; 
-import Navbar from "../Navbar"; 
+import { toast, Toaster } from "sonner";
 import "./Home.css";
 
 const API_URL = "http://127.0.0.1:8000/api/catalog";
@@ -16,19 +31,22 @@ const Home = () => {
   const [filteredData, setFilteredData] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("All");
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+
   const [errorMessage, setErrorMessage] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
   const navigate = useNavigate();
 
   const categoryIcons = {
-    "Electronics": <FaTv size={50} />,
-    "Fashion": <FaTshirt size={50} />,
+    Electronics: <FaTv size={50} />,
+    Fashion: <FaTshirt size={50} />,
     "Health & Beauty": <FaHeart size={50} />,
     "Home & Living": <FaCouch size={50} />,
     "Groceries & Food": <FaAppleAlt size={50} />,
     "Toys & Baby": <FaBabyCarriage size={50} />,
     "Sports & Outdoors": <FaBasketballBall size={50} />,
-    "Automotive": <FaCar size={50} />,
+    Automotive: <FaCar size={50} />,
     "Books, Music & Movies": <FaBook size={50} />,
     "Pets & Animals": <FaPaw size={50} />,
   };
@@ -63,7 +81,7 @@ const Home = () => {
     const token = localStorage.getItem("token");
 
     try {
-      const response = await fetch(API_URL, {
+      const response = await fetch("http://127.0.0.1:8000/api/carts", {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -88,6 +106,10 @@ const Home = () => {
     }
   };
 
+  const handleSearchChange = (e) => {
+    setSearchTerm(e.target.value);
+  };
+
   const filterProducts = () => {
     let data = [...products];
 
@@ -108,66 +130,219 @@ const Home = () => {
     try {
       setErrorMessage(null);
       setSuccessMessage(null);
-  
+
       const token = localStorage.getItem("token");
-  
+
       if (!token) {
         throw new Error("Unauthorized.");
       }
-  
-      const payload = {
-        product_id: productId,
-        quantity: 1,
-      };
-  
-      const response = await fetch(API_URL2, {
-        method: "POST",
+
+      const cartItemResponse = await fetch(`${API_URL2}`, {
+        method: "GET",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(payload),
       });
-  
-      if (!response.ok) {
-        try {
-          const errorData = await response.json();
-          throw new Error(errorData.message || "Failed to add product to cart.");
-        } catch (jsonError) {
-          throw new Error("Failed to add product to cart.");
-        }
+
+      if (!cartItemResponse.ok) {
+        throw new Error("Failed to fetch cart items.");
       }
-  
-      const data = await response.json();
-      setSuccessMessage(data.message || "Product added to cart successfully!");
-      console.log(`Product ${productId} added to cart`);
+
+      const cartItems = await cartItemResponse.json();
+      console.log("Cart items:", cartItems);
+      const existingItem = cartItems.find(
+        (item) => item.product_id === productId
+      );
+
+      if (existingItem) {
+        console.log("Existing item:", existingItem);
+        const updatedQuantity = existingItem.quantity + 1;
+
+        const updateResponse = await fetch(`${API_URL2}/${existingItem.id}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ quantity: updatedQuantity }),
+        });
+
+        if (!updateResponse.ok) {
+          throw new Error("Failed to update product quantity.");
+        }
+
+        const updatedData = await updateResponse.json();
+        setSuccessMessage(
+          updatedData.message || "Product added to cart successfully!"
+        );
+        console.log(`Product ${productId} quantity updated in cart`);
+      } else {
+        const payload = {
+          product_id: productId,
+          quantity: 1,
+        };
+
+        const storeResponse = await fetch(`${API_URL2}`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(payload),
+        });
+
+        if (!storeResponse.ok) {
+          const errorData = await storeResponse.json();
+          throw new Error(
+            errorData.message || "Failed to add product to cart."
+          );
+        }
+
+        const data = await storeResponse.json();
+        setSuccessMessage(
+          data.message || "Product added to cart successfully!"
+        );
+        console.log(`Product ${productId} added to cart`);
+      }
     } catch (error) {
       console.error("Error adding product to cart:", error);
       setErrorMessage(error.message || "Failed to add product to cart.");
     }
   };
 
-  const handleViewProduct = (productId) => {
-    console.log(`View details of product ${productId}`);
-    navigate(`/product/${productId}`);
+  const handleViewProduct = (product) => {
+    setSelectedProduct(product); // Set selected product
+    setShowModal(true); // Show the modal
+  };
+
+  const handleCloseModal = () => {
+    setShowModal(false); // Close the modal
+    setSelectedProduct(null); // Clear selected product
   };
 
   return (
     <>
-      <Navbar setSearchTerm={setSearchTerm} /> 
-      
       {loading ? (
         <div
           className="d-flex justify-content-center align-items-center"
           style={{ height: "100vh" }}
         >
-          <GridLoader color="#308fff" cssOverride={{ margin: "auto" }} size={35} />
+          <GridLoader
+            color="#308fff"
+            cssOverride={{ margin: "auto" }}
+            size={35}
+          />
         </div>
       ) : (
         <div className="container">
           <br />
-          <h2>Product Catalog</h2>
+          <div className="d-flex justify-content-between align-items-center">
+            <h2>Product Catalog</h2>
+
+            <div className="d-flex align-items-center">
+
+              <div className="search-container me-3">
+                <FaIcons.FaSearch className="search-icon" />
+                <input
+                  type="text"
+                  className="search-input"
+                  placeholder="Search products..."
+                  value={searchTerm}
+                  onChange={handleSearchChange}
+                />
+              </div>
+
+              <Col xs="auto" className="ms-auto">
+                <Dropdown>
+                  <Dropdown.Toggle
+                    variant="light"
+                    className="d-flex align-items-center"
+                  >
+                    <i className="me-2">
+                      <IoIcons.IoFilter />
+                    </i>
+                    Sort & Filter
+                  </Dropdown.Toggle>
+
+                  <Dropdown.Menu>
+                    <Dropdown drop="start">
+                      <Dropdown.Toggle
+                        variant="light"
+                        as="div"
+                        className="dropdown-item"
+                      >
+                        Category
+                      </Dropdown.Toggle>
+                      <Dropdown.Menu>
+                        {[
+                          "All",
+                          "Electronics",
+                          "Fashion",
+                          "Health & Beauty",
+                          "Home & Living",
+                          "Groceries & Food",
+                          "Toys & Baby",
+                          "Sports & Outdoors",
+                          "Automotive",
+                          "Books, Music & Movies",
+                          "Pets & Animals",
+                        ].map((cat) => (
+                          <Dropdown.Item
+                            key={cat}
+                            onClick={() => {
+                              setCategoryFilter(cat);
+                              filterProducts(searchTerm, cat);
+                            }}
+                          >
+                            {cat}
+                          </Dropdown.Item>
+                        ))}
+                      </Dropdown.Menu>
+                    </Dropdown>
+
+                    <Dropdown.Divider />
+
+                    <Dropdown drop="start">
+                      <Dropdown.Toggle
+                        variant="light"
+                        as="div"
+                        className="dropdown-item"
+                      >
+                        Price
+                      </Dropdown.Toggle>
+                      <Dropdown.Menu>
+                        <Dropdown.Item
+                          onClick={() => {
+                            const sortedData = [...filteredData].sort(
+                              (a, b) => b.price - a.price
+                            );
+                            setFilteredData(sortedData);
+                          }}
+                        >
+                          Highest Price
+                        </Dropdown.Item>
+                        <Dropdown.Item
+                          onClick={() => {
+                            const sortedData = [...filteredData].sort(
+                              (a, b) => a.price - b.price
+                            );
+                            setFilteredData(sortedData);
+                          }}
+                        >
+                          Lowest Price
+                        </Dropdown.Item>
+                      </Dropdown.Menu>
+                    </Dropdown>
+
+
+                  </Dropdown.Menu>
+                </Dropdown>
+              </Col>
+            </div>
+          </div>
           <br />
+          
           <Row className="mt-4">
             {filteredData.map((product) => (
               <Col key={product.id} md={4} className="mb-4">
@@ -181,10 +356,7 @@ const Home = () => {
                       <strong>Category:</strong> {product.category}
                     </Card.Text>
                     <Card.Text>
-                      <strong>Price:</strong> ${product.price}
-                    </Card.Text>
-                    <Card.Text>
-                      <strong>Quantity:</strong> {product.quantity} pieces
+                      <strong>Price:</strong> ₱{product.price}
                     </Card.Text>
                     <div className="d-flex justify-content-between mt-3">
                       <Button
@@ -196,7 +368,7 @@ const Home = () => {
                       </Button>
                       <Button
                         variant="secondary"
-                        onClick={() => handleViewProduct(product.id)}
+                        onClick={() => handleViewProduct(product)}
                         className="w-45"
                       >
                         <FaRegEye /> View
@@ -209,7 +381,43 @@ const Home = () => {
           </Row>
         </div>
       )}
-
+      {selectedProduct && (
+        <Modal show={showModal} onHide={handleCloseModal}>
+          <Modal.Header closeButton>
+            <Modal.Title>{selectedProduct.name}</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <p>
+              <strong>Barcode:</strong> {selectedProduct.barcode}
+            </p>
+            <p>
+              <strong>Description:</strong> {selectedProduct.description}
+            </p>
+            <p>
+              <strong>Category:</strong> {selectedProduct.category}
+            </p>
+            <p>
+              <strong>Quantity:</strong> {selectedProduct.quantity}
+            </p>
+            <p>
+              <strong>Price:</strong> ₱{selectedProduct.price}
+            </p>
+          </Modal.Body>
+          <Modal.Footer>
+            {/* Add to Cart Button inside Modal */}
+            <Button
+              variant="primary"
+              onClick={() => handleAddToCart(selectedProduct.id)} // Using selectedProduct.id
+              className="w-45"
+            >
+              <FaCartPlus /> Add to Cart
+            </Button>
+            <Button variant="secondary" onClick={handleCloseModal}>
+              Close
+            </Button>
+          </Modal.Footer>
+        </Modal>
+      )}
       <Toaster richColors position="bottom-right" />
     </>
   );

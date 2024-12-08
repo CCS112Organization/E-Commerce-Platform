@@ -6,7 +6,7 @@ import { SidebarData } from "./SidebarData";
 import { IconContext } from "react-icons";
 import "./Navbar.css";
 
-export const Navbar = ({ setSearchTerm }) => {
+export const Navbar = () => {
   const [sidebar, setSidebar] = useState(false);
   const [cartQuantity, setCartQuantity] = useState(0); // State to track cart quantity based on distinct products
   const showSidebar = () => setSidebar(!sidebar);
@@ -47,9 +47,6 @@ export const Navbar = ({ setSearchTerm }) => {
     navigate("/");
   };
 
-  const handleSearchChange = (e) => {
-    setSearchTerm(e.target.value); // Update the search term in Home component
-  };
 
   return (
     <>
@@ -58,18 +55,6 @@ export const Navbar = ({ setSearchTerm }) => {
           <Link to="#" className="menu-bars">
             <FaIcons.FaBars onClick={showSidebar} />
           </Link>
-
-          <div className="search-container">
-            <input
-              type="text"
-              className="search-input"
-              placeholder="Search products..."
-              onChange={handleSearchChange}
-            />
-            <button className="search-btn">
-              <FaIcons.FaSearch />
-            </button>
-          </div>
 
           <Link to="/user/view-cart" className="view-cart">
             <div className="cart-icon-container">
