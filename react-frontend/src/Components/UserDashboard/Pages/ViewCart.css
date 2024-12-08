@@ -2,6 +2,7 @@
 .view-cart-container {
   max-width: 1200px; /* Maximum width of the cart container */
   margin: 0 auto; /* Centers the container horizontally */
+  margin-top:20px;
   padding: 20px; /* Adds padding inside the container */
   font-family: Arial, sans-serif; /* Sets the font family for the text */
   background-color: #dbedf1; /* Light background color for the container */

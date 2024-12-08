@@ -1,6 +1,16 @@
 import React, { useState, useEffect } from "react";
-import { Table, Form, Button, Card, Modal, Row, Col } from "react-bootstrap";
+import {
+  Table,
+  Form,
+  Button,
+  Card,
+  Modal,
+  Row,
+  Col,
+  Dropdown,
+} from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
+import * as IoIcons from "react-icons/io5";
 import GridLoader from "react-spinners/GridLoader";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./Home.css";
@@ -16,6 +26,8 @@ function Home() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const [priceFilter, setPriceFilter] = useState({ min: 0, max: 0 });
+  const [stockFilter, setStockFilter] = useState(null);
   const [editedProduct, setEditedProduct] = useState({
     barcode: null,
     name: "",
@@ -159,14 +171,25 @@ function Home() {
     }
   };
 
-  const handleSearch = () => {
-    searchName(searchTerm, categoryFilter);
+  const handleSearch = (term) => {
+    setSearchTerm(term);
+    if (term === "") {
+      setFilteredData(originalData);
+    } else {
+      searchName(term, categoryFilter);
+    }
   };
 
-  const handleClearSearch = () => {
-    setSearchTerm("");
-    setCategoryFilter("All");
-    setFilteredData(originalData);
+  const handlePriceFilter = () => {
+    if (priceFilter.min >= priceFilter.max && priceFilter.max !== 0) {
+      setErrorMessage("Minimum price should be smaller than maximum price.");
+      return;
+    }
+    setErrorMessage(null); 
+    searchName("", categoryFilter); 
+    setPriceFilter({ min: 0, max: 0 });
+    setTimeout(() => {
+    }, 500);
   };
 
   const searchName = (name, category) => {
@@ -182,13 +205,23 @@ function Home() {
       data = data.filter((product) => product.category === category);
     }
 
-    setFilteredData(data);
-  };
+    if (priceFilter.min || priceFilter.max) {
+      data = data.filter(
+        (product) =>
+          (priceFilter.min === 0 || product.price >= priceFilter.min) &&
+          (priceFilter.max === 0 || product.price <= priceFilter.max)
+      );
+    }
 
-  const handleCategoryChange = (event) => {
-    const category = event.target.value;
-    setCategoryFilter(category);
-    searchName(searchTerm, category);
+    if (stockFilter) {
+      data = data.filter((product) =>
+        stockFilter === "inStock"
+          ? product.quantity > 0
+          : product.quantity === 0
+      );
+    }
+
+    setFilteredData(data);
   };
 
   const isUpdateDisabled =
@@ -229,63 +262,136 @@ function Home() {
                 </div>
               )}
               <Form>
-                <Row>
-                  <Col>
-                    <Form.Group className="mb-3" controlId="search">
-                      <Form.Label className="mb-">Search product:</Form.Label>
-                      <Form.Control
-                        type="text"
-                        placeholder="Enter product name"
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") {
-                            e.preventDefault();
-                            handleSearch();
-                          }
-                        }}
-                      />
-                    </Form.Group>
-                    <Button
-                      variant="primary"
-                      size="sm"
+                <Row className="align-items-center">
+                  <Col xs="auto" className="d-flex align-items-center">
+                    <Form.Label className="me-2 mb-0">Search</Form.Label>
+                    <Form.Control
+                      type="text"
+                      placeholder="Enter product name"
+                      value={searchTerm}
+                      onChange={(e) => handleSearch(e.target.value)}
                       className="me-2"
-                      onClick={handleSearch}
-                    >
-                      Search
-                    </Button>
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      className="me-2"
-                      onClick={handleClearSearch}
-                    >
-                      Clear Search
-                    </Button>
+                    />
                   </Col>
-                  <Col>
-                    <Form.Group className="mb-3" controlId="category">
-                      <Form.Label>Filter by category:</Form.Label>
-                      <Form.Select
-                        value={categoryFilter}
-                        onChange={handleCategoryChange}
+
+                  <Col xs="auto" className="ms-auto">
+                    <Dropdown>
+                      <Dropdown.Toggle
+                        variant="light"
+                        className="d-flex align-items-center"
                       >
-                        <option value="All">All</option>
-                        <option value="Electronics">Electronics</option>
-                        <option value="Fashion">Fashion</option>
-                        <option value="Health & Beauty">Health & Beauty</option>
-                        <option value="Home & Living">Home & Living</option>
-                        <option value="Groceries & Food">Groceries & Food</option>
-                        <option value="Toys & Baby">Toys & Baby</option>
-                        <option value="Sports & Outdoors">Sports & Outdoors</option>
-                        <option value="Automotive">Automotive</option>
-                        <option value="Books, Music & Movies">Books, Music & Movies</option>
-                        <option value="Pets & Animals">Pets & Animals</option>
-                      </Form.Select>
-                    </Form.Group>
+                        <i className="me-2">
+                          <IoIcons.IoFilter />
+                        </i>
+                        Sort & Filter
+                      </Dropdown.Toggle>
+
+                      <Dropdown.Menu>
+                        <Dropdown drop="start">
+                          <Dropdown.Toggle
+                            variant="light"
+                            as="div"
+                            className="dropdown-item"
+                          >
+                            Category
+                          </Dropdown.Toggle>
+                          <Dropdown.Menu>
+                            {[
+                              "All",
+                              "Electronics",
+                              "Fashion",
+                              "Health & Beauty",
+                              "Home & Living",
+                              "Groceries & Food",
+                              "Toys & Baby",
+                              "Sports & Outdoors",
+                              "Automotive",
+                              "Books, Music & Movies",
+                            ].map((cat) => (
+                              <Dropdown.Item
+                                key={cat}
+                                onClick={() => {
+                                  setCategoryFilter(cat);
+                                  searchName(searchTerm, cat);
+                                }}
+                              >
+                                {cat}
+                              </Dropdown.Item>
+                            ))}
+                          </Dropdown.Menu>
+                        </Dropdown>
+
+                        <Dropdown.Divider />
+                        <Dropdown drop="start">
+                          <Dropdown.Toggle
+                            variant="light"
+                            as="div"
+                            className="dropdown-item"
+                          >
+                            Price
+                          </Dropdown.Toggle>
+                          <Dropdown.Menu>
+                            <Dropdown.Item
+                              onClick={() => {
+                                const sortedData = [...originalData].sort(
+                                  (a, b) => b.price - a.price
+                                );
+                                setFilteredData(sortedData);
+                              }}
+                            >
+                              Highest Price
+                            </Dropdown.Item>
+                            <Dropdown.Item
+                              onClick={() => {
+                                const sortedData = [...originalData].sort(
+                                  (a, b) => a.price - b.price
+                                );
+                                setFilteredData(sortedData);
+                              }}
+                            >
+                              Lowest Price
+                            </Dropdown.Item>
+                          </Dropdown.Menu>
+                        </Dropdown>
+
+                        <Dropdown.Divider />
+                        <Dropdown drop="start">
+                          <Dropdown.Toggle
+                            variant="light"
+                            as="div"
+                            className="dropdown-item"
+                          >
+                            Stock
+                          </Dropdown.Toggle>
+                          <Dropdown.Menu>
+                            <Dropdown.Item
+                              onClick={() => {
+                                const sortedData = [...originalData].sort(
+                                  (a, b) => b.quantity - a.quantity
+                                );
+                                setFilteredData(sortedData);
+                              }}
+                            >
+                              Highest Stock
+                            </Dropdown.Item>
+                            <Dropdown.Item
+                              onClick={() => {
+                                const sortedData = [...originalData].sort(
+                                  (a, b) => a.quantity - b.quantity
+                                );
+                                setFilteredData(sortedData);
+                              }}
+                            >
+                              Lowest Stock
+                            </Dropdown.Item>
+                          </Dropdown.Menu>
+                        </Dropdown>
+                      </Dropdown.Menu>
+                    </Dropdown>
                   </Col>
                 </Row>
               </Form>
+
               <div style={{ maxHeight: "335px", overflowY: "auto" }}>
                 <Table striped bordered hover responsive="sm">
                   <thead>
@@ -433,7 +539,9 @@ function Home() {
                     <option value="Toys & Baby">Toys & Baby</option>
                     <option value="Sports & Outdoors">Sports & Outdoors</option>
                     <option value="Automotive">Automotive</option>
-                    <option value="Books, Music & Movies">Books, Music & Movies</option>
+                    <option value="Books, Music & Movies">
+                      Books, Music & Movies
+                    </option>
                     <option value="Pets & Animals">Pets & Animals</option>
                   </Form.Select>
                 </Form.Group>

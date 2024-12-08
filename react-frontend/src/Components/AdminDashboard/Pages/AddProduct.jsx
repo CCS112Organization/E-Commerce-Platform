@@ -77,7 +77,7 @@ function AddProduct() {
       setCategory("");
 
       setTimeout(() => {
-        navigate("/dashboard");
+        navigate("/admin");
       }, 1300);
       
     } catch (error) {
