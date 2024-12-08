@@ -6,6 +6,7 @@ import { SidebarData } from "./SidebarData";
 import { IconContext } from "react-icons";
 import "./Navbar.css";
 
+
 export const Navbar = ({ setSearchTerm }) => {
   const [sidebar, setSidebar] = useState(false);
   const showSidebar = () => setSidebar(!sidebar);
@@ -40,7 +41,8 @@ export const Navbar = ({ setSearchTerm }) => {
             </button>
           </div>
 
-          <Link to="/cart" className="cart-btn">
+          <Link to="/user/view-cart" 
+            className="view-cart">
             <FaIcons.FaShoppingCart />
           </Link>
         </div>

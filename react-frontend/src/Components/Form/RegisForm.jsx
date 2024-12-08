@@ -2,10 +2,12 @@ import React, { useState } from 'react';
 import './Form.css';
 import { FaUser, FaLock, FaEnvelope } from 'react-icons/fa';
 import { useNavigate, Link } from 'react-router-dom';
+import { BiSolidContact } from "react-icons/bi";
 
 const RegistrationForm = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [contact, setContact] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -40,6 +42,7 @@ const RegistrationForm = () => {
         body: JSON.stringify({
           name: name.trim(),
           email: email.trim(),
+          contact_info: contact.trim(),
           password: password.trim(),
         }),
       });
@@ -89,6 +92,18 @@ const RegistrationForm = () => {
             />
             <FaEnvelope className="icon" />
           </div>
+
+          <div className="input-box">
+            <input
+              type="string"
+              placeholder="Contact"
+              required
+              value={contact}
+              onChange={(e) =>setContact(e.target.value)}
+            />
+            <BiSolidContact className="icon" />
+          </div>
+
 
           <div className="input-box">
             <input

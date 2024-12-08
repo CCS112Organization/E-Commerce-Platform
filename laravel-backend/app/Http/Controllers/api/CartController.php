@@ -18,15 +18,27 @@ class CartController extends Controller
     public function index()
     {
         $user = Auth::user();
+
+        // Get the user's cart or create a new one
         $cart = $user->cart ?: Cart::create(['user_id' => $user->id]);
-        $cart = $user->cart->items()->get();
 
-        if (!$cart) {
-            return response()->json(['message' => 'No cart found for this user'], 404);
-        }
+        // Load items with product details
+        $cart->load('items.product');
 
-        return response()->json($cart);
+        // Format the response
+        $cartItems = $cart->items->map(function ($item) {
+            return [
+                'id' => $item->id,
+                'product_id' => $item->product_id,
+                'name' => $item->product->name,
+                'price' => $item->price,
+                'quantity' => $item->quantity,
+            ];
+        });
+
+        return response()->json(['items' => $cartItems]);
     }
+
 
 
     /**
@@ -66,7 +78,7 @@ class CartController extends Controller
         if ($existingItem) {
             // If the product is already in the cart, update the quantity instead
             $existingItem->quantity += $request->quantity;
-            $existingItem->price = $product->price * $existingItem->quantity; 
+            $existingItem->price = $product->price; 
             $existingItem->save();
             return response()->json($existingItem, 200);
         } else {
@@ -74,7 +86,7 @@ class CartController extends Controller
             $cartItem = $cart->items()->create([
                 'product_id' => $product->id,
                 'quantity' => $request->quantity,
-                'price' => $product->price * $request->quantity,
+                'price' => $product->price,
             ]);
             return response()->json($cartItem, 201);
         }
