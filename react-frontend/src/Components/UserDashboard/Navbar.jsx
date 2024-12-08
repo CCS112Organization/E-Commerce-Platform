@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import * as FaIcons from "react-icons/fa";
 import * as AiIcons from "react-icons/ai";
 import { Link, useNavigate } from "react-router-dom";
@@ -6,11 +6,41 @@ import { SidebarData } from "./SidebarData";
 import { IconContext } from "react-icons";
 import "./Navbar.css";
 
-
 export const Navbar = ({ setSearchTerm }) => {
   const [sidebar, setSidebar] = useState(false);
+  const [cartQuantity, setCartQuantity] = useState(0); // State to track cart quantity based on distinct products
   const showSidebar = () => setSidebar(!sidebar);
   const navigate = useNavigate();
+
+  // Fetch cart quantity on component mount
+  useEffect(() => {
+    const fetchCartQuantity = async () => {
+      const token = localStorage.getItem("token");
+      if (token) {
+        try {
+          const response = await fetch("http://127.0.0.1:8000/api/carts", {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+          if (response.ok) {
+            const data = await response.json();
+            
+            // Count distinct product IDs (by `product_id`)
+            const distinctProductIds = new Set(data.items.map(item => item.product_id));
+            setCartQuantity(distinctProductIds.size); // Set cart quantity to the number of distinct products
+          } else {
+            console.error("Failed to fetch cart data");
+          }
+        } catch (error) {
+          console.error("Error fetching cart data:", error);
+        }
+      }
+    };
+
+    fetchCartQuantity();
+  }, []); // Empty dependency array to run the effect only once when the component mounts
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -18,7 +48,7 @@ export const Navbar = ({ setSearchTerm }) => {
   };
 
   const handleSearchChange = (e) => {
-    setSearchTerm(e.target.value);  // Update the search term in Home component
+    setSearchTerm(e.target.value); // Update the search term in Home component
   };
 
   return (
@@ -41,9 +71,13 @@ export const Navbar = ({ setSearchTerm }) => {
             </button>
           </div>
 
-          <Link to="/user/view-cart" 
-            className="view-cart">
-            <FaIcons.FaShoppingCart />
+          <Link to="/user/view-cart" className="view-cart">
+            <div className="cart-icon-container">
+              <FaIcons.FaShoppingCart />
+              {cartQuantity > 0 && (
+                <span className="cart-quantity-badge">{cartQuantity}</span>
+              )}
+            </div>
           </Link>
         </div>
 

@@ -165,3 +165,23 @@ span {
         font-size: 1.2rem;
     }
 }
+
+.cart-icon-container {
+    position: relative;
+    display: inline-block;
+    font-size: 1.5rem;
+  }
+  
+  .cart-quantity-badge {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background-color: rgb(255, 255, 255);
+    color: rgb(91, 184, 212);
+    border-radius: 50%;
+    padding: 4px 7px;
+    font-size: 12px;
+    font-weight: bold;
+    
+  }
+  

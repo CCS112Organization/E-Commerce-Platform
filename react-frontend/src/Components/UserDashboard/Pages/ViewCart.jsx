@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "./ViewCart.css"; // Assuming you have a separate CSS file
 import { Link } from "react-router-dom";
+import { MdDelete } from "react-icons/md";
 
 const ViewCart = () => {
   const [cartItems, setCartItems] = useState([]);
@@ -148,7 +149,7 @@ const ViewCart = () => {
                   className="remove-item-btn"
                   onClick={() => removeItem(item.id)}
                 >
-                  Remove
+                  <MdDelete />
                 </button>
               </div>
             ))}

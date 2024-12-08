@@ -4,7 +4,7 @@
     padding: 20px;
     border: 1px solid #ccc;
     border-radius: 8px;
-    background-color: #f9f9f9;
+    background-color: #dbedf1;
   }
   
   .checkout-details {
@@ -74,3 +74,26 @@
     background-color: #218838;
   }
   
+  .cart-summary table {
+    width: 100%;
+    border-collapse: collapse; /* Collapse table borders for a cleaner look */
+    table-layout: fixed; /* Ensure equal column width */
+    border: none;
+  }
+  
+  .cart-summary th, .cart-summary td {
+    padding: 12px; /* Add padding for readability */
+    border: 1px solid #ddd; /* Light border for the table cells */
+    text-align: center; /* Center text for both th and td */
+    word-wrap: break-word; /* Ensure long words break onto the next line if necessary */
+    border: none;
+  }
+  
+  .cart-summary th {
+    background-color: #f4f4f4; /* Light background for table headers */
+    font-weight: bold; /* Bold header text */
+  }
+  
+  .cart-summary td {
+    font-size: 14px; /* Slightly smaller text for the table body */
+  }
