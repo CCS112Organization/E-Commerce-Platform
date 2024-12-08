@@ -183,6 +183,9 @@ const Home = () => {
                     <Card.Text>
                       <strong>Price:</strong> ${product.price}
                     </Card.Text>
+                    <Card.Text>
+                      <strong>Quantity:</strong> {product.quantity} pieces
+                    </Card.Text>
                     <div className="d-flex justify-content-between mt-3">
                       <Button
                         variant="primary"

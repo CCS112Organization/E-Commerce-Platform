@@ -2,35 +2,70 @@ import React, { useState } from 'react';
 import './Form.css';
 import { FaUser, FaLock, FaEnvelope } from 'react-icons/fa';
 import { useNavigate, Link } from 'react-router-dom';
+import { BiSolidContact } from "react-icons/bi";
 
 const RegistrationForm = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [contact, setContact] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [passwordStrength, setPasswordStrength] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState(null);
   const navigate = useNavigate();
+
+  const handlePasswordChange = (e) => {
+    const newPassword = e.target.value;
+    setPassword(newPassword);
+    evaluatePasswordStrength(newPassword);
+  };
+
+  const evaluatePasswordStrength = (password) => {
+    let strength = 0;
+
+    if (password.length >= 8) strength++;
+    if (/[A-Z]/.test(password)) strength++;
+    if (/[a-z]/.test(password)) strength++;
+    if (/[0-9]/.test(password)) strength++;
+    if (/[^A-Za-z0-9]/.test(password)) strength++;
+
+    if (strength <= 1) {
+      setPasswordStrength({ label: 'Weak', color: 'red' });
+    } else if (strength === 2) {
+      setPasswordStrength({ label: 'Fair', color: 'orange' });
+    } else if (strength === 3) {
+      setPasswordStrength({ label: 'Good', color: 'blue' });
+    } else if (strength >= 4) {
+      setPasswordStrength({ label: 'Strong', color: 'green' });
+    } else {
+      setPasswordStrength(null);
+    }
+  };
 
   const handleRegistration = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     setErrorMessage(null);
-  
-    // Check if passwords match
+
     if (password !== confirmPassword) {
       setErrorMessage("Passwords do not match.");
       setIsLoading(false);
       return;
     }
-  
-    
-    if (password.length < 8) {
-      setErrorMessage("Password must be at least 8 characters long.");
+
+    if (passwordStrength.label === 'Weak') {
+      setErrorMessage("Please choose a stronger password.");
       setIsLoading(false);
       return;
     }
-  
+
+    if (contact.length !== 11) {
+      setErrorMessage("Contact number must be 11 digits long.");
+      setIsLoading(false);
+      return;
+    }
+
     try {
       const response = await fetch('http://127.0.0.1:8000/api/register', {
         method: 'POST',
@@ -40,15 +75,16 @@ const RegistrationForm = () => {
         body: JSON.stringify({
           name: name.trim(),
           email: email.trim(),
+          contact_info: contact.trim(),
           password: password.trim(),
         }),
       });
-  
+
       if (response.ok) {
         const data = await response.json();
         console.log(data);
         alert('Registration successful!');
-        navigate('/'); 
+        navigate('/');
       } else {
         const errorData = await response.json();
         setErrorMessage(errorData.message || 'Something went wrong.');
@@ -59,7 +95,7 @@ const RegistrationForm = () => {
       setIsLoading(false);
     }
   };
-  
+
   return (
     <div className="loginform">
       <div className="wrapper">
@@ -92,14 +128,38 @@ const RegistrationForm = () => {
 
           <div className="input-box">
             <input
+              type="text"
+              placeholder="Contact"
+              required
+              value={contact}
+              onChange={(e) => setContact(e.target.value)}
+            />
+            <BiSolidContact className="icon" />
+          </div>
+
+          <div className="input-box">
+            <input
               type="password"
               placeholder="Password"
               required
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={handlePasswordChange}
             />
             <FaLock className="icon" />
           </div>
+
+          {passwordStrength && (
+            <div className="password-strength">
+              <span
+                style={{
+                  color: passwordStrength.color,
+                  fontWeight: 'bold',
+                }}
+              >
+                {passwordStrength.label}
+              </span>
+            </div>
+          )}
 
           <div className="input-box">
             <input
@@ -120,12 +180,10 @@ const RegistrationForm = () => {
             {isLoading ? 'Registering...' : 'Register'}
           </button>
 
-          <div className='register-link'>
+          <div className="register-link">
             <p>
               Already have an account?{' '}
-              <Link to="/">
-                Login
-              </Link>
+              <Link to="/">Login</Link>
             </p>
           </div>
         </form>
