@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import "./ViewCart.css"; // Assuming you have a separate CSS file
 import { Link } from "react-router-dom";
 import { MdDelete } from "react-icons/md";
+import { toast, Toaster } from "sonner";
+import "./ViewCart.css";
 
 const ViewCart = () => {
   const [cartItems, setCartItems] = useState([]);
   const [grandTotal, setGrandTotal] = useState(0);
   const navigate = useNavigate();
+  const [errorMessage, setErrorMessage] = useState(null);
 
-  // Fetch the cart data when the page loads
   useEffect(() => {
     const fetchCartData = async () => {
       const token = localStorage.getItem("token");
@@ -23,8 +24,8 @@ const ViewCart = () => {
 
         if (response.ok) {
           const data = await response.json();
-          setCartItems(data.items || []); // Make sure data contains items array
-          calculateGrandTotal(data.items || []); // Calculate the grand total
+          setCartItems(data.items || []);
+          calculateGrandTotal(data.items || []);
         } else {
           console.error("Failed to fetch cart data");
         }
@@ -36,7 +37,6 @@ const ViewCart = () => {
     fetchCartData();
   }, []);
 
-  // Calculate grand total
   const calculateGrandTotal = (items) => {
     const total = items.reduce(
       (sum, item) => sum + item.price * item.quantity,
@@ -45,7 +45,6 @@ const ViewCart = () => {
     setGrandTotal(total);
   };
 
-  // Update item quantity in the cart
   const updateQuantity = async (id, newQuantity) => {
     const token = localStorage.getItem("token");
     try {
@@ -75,7 +74,6 @@ const ViewCart = () => {
     }
   };
 
-  // Remove item from the cart
   const removeItem = async (id) => {
     const token = localStorage.getItem("token");
     try {
@@ -101,13 +99,83 @@ const ViewCart = () => {
     }
   };
 
-  // Handle checkout or redirect to home if cart is empty
-  const handleCheckout = () => {
-    if (cartItems.length === 0) {
-      alert("Your cart is empty.");
-      navigate("/");
-    } else {
-      navigate("/checkout");
+  const handleCheckout = async () => {
+    const token = localStorage.getItem("token");
+  
+    if (!token) {
+      toast.error("You must be logged in to proceed.", {
+        position: "bottom-right",
+        style: { backgroundColor: "red", color: "white" },
+      });
+      navigate("/login");
+      return;
+    }
+  
+    try {
+      // Fetch the product catalog from the API
+      const catalogResponse = await fetch("http://127.0.0.1:8000/api/catalog", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+  
+      if (!catalogResponse.ok) {
+        toast.error("Error fetching catalog. Please try again later.", {
+          position: "bottom-right",
+          style: { backgroundColor: "red", color: "white" },
+        });
+        return;
+      }
+  
+      const catalog = await catalogResponse.json(); 
+  
+      for (const item of cartItems) {
+        const product = catalog.find((prod) => prod.id === item.product_id);
+  
+        if (!product) {
+          toast.error(`Product with ID ${item.product_id} not found in catalog.`, {
+            position: "bottom-right",
+            style: { backgroundColor: "red", color: "white" },
+          });
+          return;
+        }
+  
+        const availableStock = product.quantity;
+
+        if (availableStock === 0) {
+          toast.error(`The item "${item.name}" is out of stock.`, {
+            position: "bottom-right",
+            style: { backgroundColor: "red", color: "white" },
+          });
+          return;
+      }
+
+        if (item.quantity > availableStock) {
+          toast.error(`The quantity of "${item.name}" exceeds the available stock. Only ${availableStock} units are available.`, {
+            position: "bottom-right",
+            style: { backgroundColor: "red", color: "white" },
+          });
+          return;
+        } 
+    }
+      if (cartItems.length === 0) {
+        toast.error("Your cart is empty.", {
+          position: "bottom-right",
+          style: { backgroundColor: "red", color: "white" },
+        });
+        navigate("/");
+      } else {
+        navigate("/user/checkout");
+      }
+  
+    } catch (error) {
+      toast.error("An error occurred while processing your checkout. Please try again later.", {
+        position: "bottom-right",
+        style: { backgroundColor: "red", color: "white" },
+      });
+      console.error("Checkout error:", error);
     }
   };
 
@@ -120,12 +188,12 @@ const ViewCart = () => {
             {cartItems.map((item) => (
               <div key={item.id} className="cart-item">
                 <div className="item-info">
-                  <p>{item.name}</p> {/* Updated to use 'name' from the API */}
-                  <p>Unit Price: ${item.price}</p>
-                  <p>Total Price: ${(item.price * item.quantity).toFixed(2)}</p>
+                  <p>{item.name}</p>
+                  <p>Unit Price: ₱{item.price}</p>
+                  <p>Total Price: ₱{(item.price * item.quantity).toFixed(2)}</p>
                   <div className="quantity-controls">
                     <button
-                      onClick={() => updateQuantity(item.id, item.quantity + 1 ,)}
+                      onClick={() => updateQuantity(item.id, item.quantity + 1)}
                     >
                       +
                     </button>
@@ -138,7 +206,7 @@ const ViewCart = () => {
                       }
                     />
                     <button
-                      onClick={() => updateQuantity(item.id, item.quantity - 1,)}
+                      onClick={() => updateQuantity(item.id, item.quantity - 1)}
                       disabled={item.quantity <= 1}
                     >
                       -
@@ -155,17 +223,16 @@ const ViewCart = () => {
             ))}
           </div>
           <div className="cart-total">
-            <h3> Total: ${grandTotal.toFixed(2)}</h3>
+            <h3> Total: ₱{grandTotal.toFixed(2)}</h3>
           </div>
-          <button className="checkout-btn">
-            <Link to="/user/checkout" style={{ textDecoration: "none", color: "inherit" }}>
-              Checkout
-            </Link>
+          <button className="checkout-btn" onClick={handleCheckout}>
+            Checkout
           </button>
         </>
       ) : (
         <p>Your cart is empty!</p>
       )}
+      <Toaster richColor position="bottom-right" />
     </div>
   );
 };

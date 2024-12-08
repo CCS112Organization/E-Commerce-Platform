@@ -39,14 +39,14 @@ const Home = () => {
   const navigate = useNavigate();
 
   const categoryIcons = {
-    Electronics: <FaTv size={50} />,
-    Fashion: <FaTshirt size={50} />,
+    "Electronics": <FaTv size={50} />,
+    "Fashion": <FaTshirt size={50} />,
     "Health & Beauty": <FaHeart size={50} />,
     "Home & Living": <FaCouch size={50} />,
     "Groceries & Food": <FaAppleAlt size={50} />,
     "Toys & Baby": <FaBabyCarriage size={50} />,
     "Sports & Outdoors": <FaBasketballBall size={50} />,
-    Automotive: <FaCar size={50} />,
+    "Automotive": <FaCar size={50} />,
     "Books, Music & Movies": <FaBook size={50} />,
     "Pets & Animals": <FaPaw size={50} />,
   };
@@ -62,7 +62,7 @@ const Home = () => {
 
   useEffect(() => {
     if (successMessage) {
-      toast.success(successMessage, { duration: 3000 });
+      toast.success(successMessage, { duration: 2000 });
       setSuccessMessage(null);
     }
 
@@ -79,25 +79,27 @@ const Home = () => {
   const fetchProducts = async () => {
     setLoading(true);
     const token = localStorage.getItem("token");
-
+  
     try {
-      const response = await fetch("http://127.0.0.1:8000/api/carts", {
+      const response = await fetch(API_URL, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
       });
-
+  
       if (!response.ok) {
         const errorData = await response.json();
         setErrorMessage(errorData.message || "Failed to fetch products.");
         return;
       }
-
+  
       const data = await response.json();
-      setProducts(data);
-      setFilteredData(data);
+      const filteredData = data.filter((product) => product.quantity > 0); 
+      setProducts(filteredData);
+      setFilteredData(filteredData); 
+  
     } catch (error) {
       console.error("Error fetching products:", error);
       setErrorMessage("Failed to fetch products.");
@@ -112,53 +114,58 @@ const Home = () => {
 
   const filterProducts = () => {
     let data = [...products];
-
+  
+    data = data.filter((product) => product.quantity > 0);
+  
     if (searchTerm) {
       data = data.filter((product) =>
         product.name.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
-
+  
     if (categoryFilter !== "All") {
       data = data.filter((product) => product.category === categoryFilter);
     }
-
+  
     setFilteredData(data);
   };
+  
 
   const handleAddToCart = async (productId) => {
     try {
       setErrorMessage(null);
       setSuccessMessage(null);
-
+  
       const token = localStorage.getItem("token");
-
+  
       if (!token) {
         throw new Error("Unauthorized.");
       }
-
-      const cartItemResponse = await fetch(`${API_URL2}`, {
+  
+      const cartItemResponse = await fetch(API_URL2, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
       });
-
+  
       if (!cartItemResponse.ok) {
         throw new Error("Failed to fetch cart items.");
       }
-
+  
       const cartItems = await cartItemResponse.json();
       console.log("Cart items:", cartItems);
-      const existingItem = cartItems.find(
-        (item) => item.product_id === productId
-      );
-
+  
+      let existingItem = null;
+      if (cartItems && cartItems.length > 0) {
+        existingItem = cartItems.find((item) => item.product_id === productId);
+      }
+  
       if (existingItem) {
         console.log("Existing item:", existingItem);
         const updatedQuantity = existingItem.quantity + 1;
-
+  
         const updateResponse = await fetch(`${API_URL2}/${existingItem.id}`, {
           method: "PUT",
           headers: {
@@ -167,11 +174,11 @@ const Home = () => {
           },
           body: JSON.stringify({ quantity: updatedQuantity }),
         });
-
+  
         if (!updateResponse.ok) {
           throw new Error("Failed to update product quantity.");
         }
-
+  
         const updatedData = await updateResponse.json();
         setSuccessMessage(
           updatedData.message || "Product added to cart successfully!"
@@ -182,7 +189,7 @@ const Home = () => {
           product_id: productId,
           quantity: 1,
         };
-
+  
         const storeResponse = await fetch(`${API_URL2}`, {
           method: "POST",
           headers: {
@@ -191,34 +198,40 @@ const Home = () => {
           },
           body: JSON.stringify(payload),
         });
-
+  
         if (!storeResponse.ok) {
           const errorData = await storeResponse.json();
           throw new Error(
             errorData.message || "Failed to add product to cart."
           );
         }
-
+  
         const data = await storeResponse.json();
         setSuccessMessage(
           data.message || "Product added to cart successfully!"
         );
         console.log(`Product ${productId} added to cart`);
       }
+
+      setTimeout(() => {
+        navigate("/"); 
+      }, 2300);
+
     } catch (error) {
       console.error("Error adding product to cart:", error);
       setErrorMessage(error.message || "Failed to add product to cart.");
     }
   };
+  
 
   const handleViewProduct = (product) => {
-    setSelectedProduct(product); // Set selected product
-    setShowModal(true); // Show the modal
+    setSelectedProduct(product); 
+    setShowModal(true); 
   };
 
   const handleCloseModal = () => {
-    setShowModal(false); // Close the modal
-    setSelectedProduct(null); // Clear selected product
+    setShowModal(false); 
+    setSelectedProduct(null); 
   };
 
   return (
@@ -404,10 +417,10 @@ const Home = () => {
             </p>
           </Modal.Body>
           <Modal.Footer>
-            {/* Add to Cart Button inside Modal */}
+            
             <Button
               variant="primary"
-              onClick={() => handleAddToCart(selectedProduct.id)} // Using selectedProduct.id
+              onClick={() => handleAddToCart(selectedProduct.id)} 
               className="w-45"
             >
               <FaCartPlus /> Add to Cart
